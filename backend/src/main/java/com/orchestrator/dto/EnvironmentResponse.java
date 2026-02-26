@@ -35,6 +35,7 @@ public class EnvironmentResponse {
                         .id(v.getId())
                         .key(v.getKey())
                         .value(maskSecrets && v.isSecret() ? "••••••••" : v.getValue())
+                        .valueType(v.getValueType().name())
                         .secret(v.isSecret())
                         .build())
                 .toList();

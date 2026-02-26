@@ -18,8 +18,10 @@ public class VariableDto {
     @Size(max = 255, message = "Variable key must not exceed 255 characters")
     private String key;
 
-    @NotBlank(message = "Variable value is required")
     private String value;
+
+    @Builder.Default
+    private String valueType = "STATIC";
 
     @Builder.Default
     private boolean secret = false;

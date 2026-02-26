@@ -1458,7 +1458,7 @@ public class ExecutionService {
 
         String result = text;
 
-        // Replace ${VARNAME} with environment variable values
+        // Replace ${VARNAME} with environment variable values (or generated values for UUID/ISO_TIMESTAMP)
         if (env != null && env.getVariables() != null) {
             Matcher envMatcher = ENV_VAR_PATTERN.matcher(result);
             StringBuilder sb = new StringBuilder();
@@ -1467,7 +1467,13 @@ public class ExecutionService {
                 String replacement = "";
                 for (EnvironmentVariable v : env.getVariables()) {
                     if (v.getKey().equals(varName)) {
-                        replacement = v.getValue();
+                        replacement = switch (v.getValueType()) {
+                            case UUID -> java.util.UUID.randomUUID().toString();
+                            case ISO_TIMESTAMP -> java.time.Instant.now()
+                                    .atOffset(java.time.ZoneOffset.UTC)
+                                    .format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                            default -> v.getValue();
+                        };
                         break;
                     }
                 }

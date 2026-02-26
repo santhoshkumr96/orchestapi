@@ -29,7 +29,7 @@ import {
   UploadOutlined,
   DownloadOutlined,
 } from '@ant-design/icons'
-import type { VariableDto, HeaderDto, HeaderValueType, ConnectorDto, ConnectorType, EnvironmentFileResponse } from '../types/environment'
+import type { VariableDto, HeaderDto, HeaderValueType, VariableValueType, ConnectorDto, ConnectorType, EnvironmentFileResponse } from '../types/environment'
 import { environmentApi } from '../services/environmentApi'
 
 const { Title } = Typography
@@ -37,6 +37,12 @@ const { Title } = Typography
 const VALUE_TYPE_OPTIONS: { label: string; value: HeaderValueType }[] = [
   { label: 'Static', value: 'STATIC' },
   { label: 'Variable', value: 'VARIABLE' },
+  { label: 'UUID', value: 'UUID' },
+  { label: 'ISO Timestamp', value: 'ISO_TIMESTAMP' },
+]
+
+const VARIABLE_VALUE_TYPE_OPTIONS: { label: string; value: VariableValueType }[] = [
+  { label: 'Static', value: 'STATIC' },
   { label: 'UUID', value: 'UUID' },
   { label: 'ISO Timestamp', value: 'ISO_TIMESTAMP' },
 ]
@@ -289,7 +295,7 @@ export default function EnvironmentDetailPage() {
 
   // --- Validation for empty fields ---
   const emptyVarKeys = new Set(variables.map((v, i) => !v.key.trim() ? i : -1).filter((i) => i >= 0))
-  const emptyVarValues = new Set(variables.map((v, i) => !v.value.trim() ? i : -1).filter((i) => i >= 0))
+  const emptyVarValues = new Set(variables.map((v, i) => (v.valueType !== 'UUID' && v.valueType !== 'ISO_TIMESTAMP' && !v.value.trim()) ? i : -1).filter((i) => i >= 0))
   const emptyHdrKeys = new Set(headers.map((h, i) => !h.headerKey.trim() ? i : -1).filter((i) => i >= 0))
   const emptyConnNames = new Set(connectors.map((c, i) => !c.name.trim() ? i : -1).filter((i) => i >= 0))
   const hasEmptyFields = emptyVarKeys.size > 0 || emptyVarValues.size > 0 || emptyHdrKeys.size > 0 || emptyConnNames.size > 0
@@ -342,7 +348,7 @@ export default function EnvironmentDetailPage() {
 
   // --- Variables helpers ---
   const addVariable = () => {
-    setVariables([...variables, { _clientId: genClientId(), key: '', value: '', secret: false }])
+    setVariables([...variables, { _clientId: genClientId(), key: '', value: '', valueType: 'STATIC', secret: false }])
   }
 
   const updateVariable = (index: number, field: keyof VariableDto, value: string | boolean) => {
@@ -459,7 +465,7 @@ export default function EnvironmentDetailPage() {
     {
       title: 'Key',
       dataIndex: 'key',
-      width: '30%',
+      width: '25%',
       render: (_: string, record: VariableRow, index: number) => {
         const isDup = dupVarIndices.has(index)
         const isEmpty = showErrors && emptyVarKeys.has(index)
@@ -479,10 +485,35 @@ export default function EnvironmentDetailPage() {
       },
     },
     {
+      title: 'Value Type',
+      dataIndex: 'valueType',
+      width: '15%',
+      render: (_: string, record: VariableRow, index: number) => (
+        <Select
+          showSearch
+          value={record.valueType || 'STATIC'}
+          onChange={(val) => updateVariable(index, 'valueType', val)}
+          options={VARIABLE_VALUE_TYPE_OPTIONS}
+          size="small"
+          style={{ width: '100%' }}
+          filterOption={(input, option) =>
+            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+          }
+        />
+      ),
+    },
+    {
       title: 'Value',
       dataIndex: 'value',
-      width: '40%',
+      width: '30%',
       render: (_: string, record: VariableRow, index: number) => {
+        if (record.valueType === 'UUID' || record.valueType === 'ISO_TIMESTAMP') {
+          return (
+            <span style={{ color: '#999', fontStyle: 'italic', fontSize: 12 }}>
+              (auto-generated)
+            </span>
+          )
+        }
         const isMasked = record.secret && !revealedIds.has(record._clientId)
         const isEmpty = showErrors && emptyVarValues.has(index)
         return (
@@ -513,16 +544,14 @@ export default function EnvironmentDetailPage() {
       title: 'Secret',
       dataIndex: 'secret',
       width: '10%',
-      render: (_: boolean, record: VariableRow) => {
-        const index = variables.indexOf(record)
-        return (
-          <Switch
-            size="small"
-            checked={record.secret}
-            onChange={(checked) => updateVariable(index, 'secret', checked)}
-          />
-        )
-      },
+      render: (_: boolean, record: VariableRow, index: number) => (
+        <Switch
+          size="small"
+          checked={record.secret}
+          onChange={(checked) => updateVariable(index, 'secret', checked)}
+          disabled={record.valueType === 'UUID' || record.valueType === 'ISO_TIMESTAMP'}
+        />
+      ),
     },
     {
       title: '',

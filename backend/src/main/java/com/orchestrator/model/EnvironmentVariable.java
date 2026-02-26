@@ -30,6 +30,11 @@ public class EnvironmentVariable {
     @Column(name = "var_value", nullable = false)
     private String value;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "value_type", nullable = false, length = 20)
+    @Builder.Default
+    private HeaderValueType valueType = HeaderValueType.STATIC;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean secret = false;

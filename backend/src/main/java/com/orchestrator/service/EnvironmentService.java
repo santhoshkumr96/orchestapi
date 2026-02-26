@@ -10,6 +10,7 @@ import com.orchestrator.model.Environment;
 import com.orchestrator.model.EnvironmentConnector;
 import com.orchestrator.model.EnvironmentHeader;
 import com.orchestrator.model.EnvironmentVariable;
+import com.orchestrator.model.HeaderValueType;
 import com.orchestrator.model.enums.ConnectorType;
 import com.orchestrator.model.EnvironmentFile;
 import com.orchestrator.repository.EnvironmentFileRepository;
@@ -129,6 +130,7 @@ public class EnvironmentService {
 
         Set<EnvironmentConnector> existingConnectors = new LinkedHashSet<>(env.getConnectors());
         env.getConnectors().clear();
+        repository.saveAndFlush(env); // flush deletes before re-insert to avoid unique constraint violation
         applyConnectors(env, request, existingConnectors);
 
         return EnvironmentResponse.from(repository.save(env), true);
@@ -271,10 +273,16 @@ public class EnvironmentService {
                         new IllegalArgumentException("Cannot resolve masked secret for key '" + dto.getKey() + "'. Please provide the actual value."));
             }
 
+            HeaderValueType valueType = HeaderValueType.STATIC;
+            if (dto.getValueType() != null) {
+                try { valueType = HeaderValueType.valueOf(dto.getValueType()); } catch (IllegalArgumentException ignored) {}
+            }
+
             EnvironmentVariable var = EnvironmentVariable.builder()
                     .environment(env)
                     .key(dto.getKey())
                     .value(value)
+                    .valueType(valueType)
                     .secret(dto.isSecret())
                     .sortOrder(order.getAndIncrement())
                     .build();

@@ -1,9 +1,12 @@
 export type HeaderValueType = 'STATIC' | 'VARIABLE' | 'UUID' | 'ISO_TIMESTAMP'
 
+export type VariableValueType = 'STATIC' | 'UUID' | 'ISO_TIMESTAMP'
+
 export interface VariableDto {
   id?: string
   key: string
   value: string
+  valueType?: VariableValueType
   secret: boolean
 }
 
