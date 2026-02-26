@@ -3,7 +3,7 @@ spring:
     name: orchestapi
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/test}
-    username: ${DB_USERNAME:demographics_user}
+    username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
@@ -21,6 +21,7 @@ spring:
     enabled: true
     default-schema: orchestrator
     schemas: orchestrator
+    table: orchestapi_flyway_history
 
 management:
   endpoints:
