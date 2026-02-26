@@ -241,13 +241,17 @@ export default function TestSuiteDetailPage() {
   }
 
   const handleStepSave = async () => {
+    const savedStepId = expandedStepId
+    const scrollY = window.scrollY
     try {
       const refreshed = await testStepApi.list(id!)
       setSteps(refreshed)
     } catch {
       message.error('Failed to refresh steps')
     }
-    setExpandedStepId(null)
+    // Keep the same step expanded and restore scroll position
+    setExpandedStepId(savedStepId)
+    requestAnimationFrame(() => window.scrollTo(0, scrollY))
   }
 
   const handleStepCancel = () => {
