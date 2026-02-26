@@ -75,6 +75,7 @@ export interface TestStep {
   cacheTtlSeconds: number
   dependencyOnly: boolean
   disabledDefaultHeaders: string[]
+  groupName: string
   sortOrder: number
   dependencies: StepDependencyDto[]
   responseHandlers: StepResponseHandlerDto[]
@@ -97,6 +98,7 @@ export interface TestStepRequest {
   cacheTtlSeconds: number
   dependencyOnly: boolean
   disabledDefaultHeaders: string[]
+  groupName: string
   dependencies: StepDependencyDto[]
   responseHandlers: StepResponseHandlerDto[]
   extractVariables: StepExtractVariableDto[]

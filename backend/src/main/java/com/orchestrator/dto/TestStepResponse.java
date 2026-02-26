@@ -35,6 +35,7 @@ public class TestStepResponse {
     private boolean dependencyOnly;
     private List<String> disabledDefaultHeaders;
     private int sortOrder;
+    private String groupName;
     private List<StepDependencyDto> dependencies;
     private List<StepResponseHandlerDto> responseHandlers;
     private List<StepExtractVariableDto> extractVariables;
@@ -59,6 +60,7 @@ public class TestStepResponse {
                 .dependencyOnly(step.isDependencyOnly())
                 .disabledDefaultHeaders(parseStringList(step.getDisabledDefaultHeaders()))
                 .sortOrder(step.getSortOrder())
+                .groupName(step.getGroupName())
                 .dependencies(mapDependencies(step))
                 .responseHandlers(mapHandlers(step))
                 .extractVariables(mapExtractVars(step))

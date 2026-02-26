@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { Badge, Button, Card, Collapse, Descriptions, Spin, Tag, Typography } from 'antd'
-import { CheckCircleOutlined, CloseCircleOutlined, CloseOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Badge, Button, Card, Collapse, Descriptions, Spin, Tag, Typography, message } from 'antd'
+import { CheckCircleOutlined, CloseCircleOutlined, CloseOutlined, CopyOutlined, LoadingOutlined } from '@ant-design/icons'
 import type { SuiteExecutionResult, StepExecutionResult, VerificationResultDto } from '../services/testSuiteApi'
 import type { TestStep } from '../types/testSuite'
 
@@ -41,6 +41,76 @@ const METHOD_COLOR: Record<string, string> = {
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`
   return `${(ms / 1000).toFixed(2)}s`
+}
+
+function formatSize(text: string): string {
+  const bytes = new Blob([text]).size
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+function syntaxHighlightJson(text: string): string {
+  let json: string
+  try {
+    json = JSON.stringify(JSON.parse(text), null, 2)
+  } catch {
+    return escapeHtml(text)
+  }
+  json = escapeHtml(json)
+  return json.replace(
+    /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+    (match) => {
+      let color = '#b5cea8'
+      if (/^"/.test(match)) {
+        color = /:$/.test(match) ? '#9cdcfe' : '#ce9178'
+      } else if (/true|false/.test(match)) {
+        color = '#569cd6'
+      } else if (/null/.test(match)) {
+        color = '#569cd6'
+      }
+      return `<span style="color:${color}">${match}</span>`
+    }
+  )
+}
+
+function CopyBtn({ text, label }: { text: string; label?: string }) {
+  return (
+    <Button
+      type="text"
+      size="small"
+      icon={<CopyOutlined />}
+      onClick={() => {
+        navigator.clipboard.writeText(text)
+        message.success(`${label || 'Text'} copied`)
+      }}
+      style={{ float: 'right', fontSize: 11, height: 20, padding: '0 4px' }}
+    >
+      Copy
+    </Button>
+  )
+}
+
+function isJson(text: string): boolean {
+  try { JSON.parse(text); return true } catch { return false }
+}
+
+function buildCurlFromResult(step: StepExecutionResult, method?: string): string {
+  const parts: string[] = [`curl -X ${method || 'GET'}`]
+  if (step.requestHeaders) {
+    Object.entries(step.requestHeaders).forEach(([key, value]) => {
+      parts.push(`  -H '${key}: ${value.replace(/'/g, "'\\''")}'`)
+    })
+  }
+  if (step.requestBody && step.requestBody.trim() && !step.requestBody.startsWith('[multipart/form-data')) {
+    parts.push(`  -d '${step.requestBody.replace(/'/g, "'\\''")}'`)
+  }
+  parts.push(`  '${step.requestUrl || ''}'`)
+  return parts.join(' \\\n')
 }
 
 function VerificationCard({ v }: { v: VerificationResultDto }) {
@@ -164,7 +234,7 @@ function VerificationCard({ v }: { v: VerificationResultDto }) {
   )
 }
 
-function StepResultDetail({ step }: { step: StepExecutionResult }) {
+function StepResultDetail({ step, method }: { step: StepExecutionResult; method?: string }) {
   const hasExtractedVars =
     step.extractedVariables && Object.keys(step.extractedVariables).length > 0
   const hasResponseHeaders =
@@ -190,6 +260,22 @@ function StepResultDetail({ step }: { step: StepExecutionResult }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Copy as cURL */}
+      {step.requestUrl && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={() => {
+              navigator.clipboard.writeText(buildCurlFromResult(step, method))
+              message.success('cURL copied to clipboard')
+            }}
+          >
+            Copy as cURL
+          </Button>
+        </div>
+      )}
+
       {/* Error message */}
       {step.errorMessage && (
         <div>
@@ -210,6 +296,7 @@ function StepResultDetail({ step }: { step: StepExecutionResult }) {
                 {/* Request URL */}
                 <div>
                   <Text type="secondary" style={{ fontSize: 11 }}>URL</Text>
+                  <CopyBtn text={step.requestUrl} label="URL" />
                   <pre style={{ ...preStyle, maxHeight: 80, margin: '2px 0 0' }}>{step.requestUrl}</pre>
                 </div>
 
@@ -253,7 +340,15 @@ function StepResultDetail({ step }: { step: StepExecutionResult }) {
                 {hasRequestBody && (
                   <div>
                     <Text type="secondary" style={{ fontSize: 11 }}>Body</Text>
-                    <pre style={{ ...preStyle, margin: '2px 0 0' }}>{step.requestBody}</pre>
+                    <CopyBtn text={step.requestBody} label="Request body" />
+                    {isJson(step.requestBody) ? (
+                      <pre
+                        style={{ ...preStyle, margin: '2px 0 0', background: '#1e1e1e', color: '#d4d4d4' }}
+                        dangerouslySetInnerHTML={{ __html: syntaxHighlightJson(step.requestBody) }}
+                      />
+                    ) : (
+                      <pre style={{ ...preStyle, margin: '2px 0 0' }}>{step.requestBody}</pre>
+                    )}
                   </div>
                 )}
               </div>
@@ -265,9 +360,15 @@ function StepResultDetail({ step }: { step: StepExecutionResult }) {
       {/* Response body */}
       <div>
         <Text strong>Response Body:</Text>
-        <pre style={preStyle}>
-          {step.responseBody || '(empty)'}
-        </pre>
+        {step.responseBody && <CopyBtn text={step.responseBody} label="Response body" />}
+        {step.responseBody && isJson(step.responseBody) ? (
+          <pre
+            style={{ ...preStyle, background: '#1e1e1e', color: '#d4d4d4' }}
+            dangerouslySetInnerHTML={{ __html: syntaxHighlightJson(step.responseBody) }}
+          />
+        ) : (
+          <pre style={preStyle}>{step.responseBody || '(empty)'}</pre>
+        )}
       </div>
 
       {/* Response headers */}
@@ -355,6 +456,9 @@ function StepResultCard({
               <Tag color={step.responseCode >= 200 && step.responseCode < 300 ? 'green' : step.responseCode >= 400 ? 'red' : 'blue'}>
                 {step.responseCode}
               </Tag>
+              {step.responseBody && (
+                <Tag style={{ margin: 0 }}>{formatSize(step.responseBody)}</Tag>
+              )}
               {step.fromCache ? (
                 <Tag color="cyan">Cached</Tag>
               ) : (
@@ -378,7 +482,7 @@ function StepResultCard({
           children: (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* This step's own result detail */}
-              <StepResultDetail step={step} />
+              <StepResultDetail step={step} method={method} />
 
               {/* Dependency results as accordion */}
               {depResults.length > 0 && (
@@ -416,7 +520,7 @@ function StepResultCard({
                             )}
                           </div>
                         ),
-                        children: <StepResultDetail step={dep} />,
+                        children: <StepResultDetail step={dep} method={depMethod} />,
                       }
                     })}
                   />

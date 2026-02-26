@@ -161,6 +161,13 @@ export const testStepApi = {
   reorder: (suiteId: string, stepIds: string[]) =>
     axios.put(`${SUITES_BASE}/${suiteId}/steps/reorder`, { stepIds }),
 
+  generateCurl: (suiteId: string, stepId: string, environmentId?: string) =>
+    axios
+      .get<{ curl: string }>(`${SUITES_BASE}/${suiteId}/steps/${stepId}/curl`, {
+        params: environmentId ? { environmentId } : {},
+      })
+      .then((r) => r.data.curl),
+
   run: (suiteId: string, stepId: string, environmentId?: string) =>
     axios
       .post<SuiteExecutionResult>(

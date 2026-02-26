@@ -83,4 +83,7 @@ public class TestStepRequest {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @Builder.Default
     private List<String> disabledDefaultHeaders = new ArrayList<>();
+
+    @Size(max = 100, message = "Group name must not exceed 100 characters")
+    private String groupName;
 }

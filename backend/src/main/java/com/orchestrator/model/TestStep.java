@@ -90,6 +90,9 @@ public class TestStep {
     @Builder.Default
     private int sortOrder = 0;
 
+    @Column(name = "group_name", length = 100)
+    private String groupName;
+
     @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<StepDependency> dependencies = new LinkedHashSet<>();

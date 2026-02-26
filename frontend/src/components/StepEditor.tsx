@@ -201,6 +201,9 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
       })),
   )
 
+  // ---- Group Name state ----
+  const [groupName, setGroupName] = useState(step?.groupName ?? '')
+
   // ---- Dependency Only state ----
   const [dependencyOnly, setDependencyOnly] = useState(step?.dependencyOnly ?? false)
 
@@ -490,6 +493,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
       cacheTtlSeconds: cacheable ? cacheTtlSeconds : 0,
       dependencyOnly,
       disabledDefaultHeaders: Array.from(disabledDefaultHeaders),
+      groupName: groupName.trim() || '',
       dependencies: dependencies.map(({ _clientId: _, ...rest }) => rest),
       responseHandlers: responseHandlers.map(({ _clientId: _, ...rest }) => rest),
       extractVariables: extractVariables.map(({ _clientId: _, ...rest }) => rest),
@@ -832,13 +836,20 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
       {/* ===== REQUEST BAR (Postman-style) ===== */}
       <div style={{ padding: '12px 0 8px', borderBottom: '1px solid #f0f0f0' }}>
-        <div style={{ marginBottom: 8 }}>
+        <div style={{ marginBottom: 8, display: 'flex', gap: 8 }}>
           <Input
             placeholder="Step name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             size="small"
-            style={{ fontWeight: 500 }}
+            style={{ fontWeight: 500, flex: 1 }}
+          />
+          <Input
+            placeholder="Group (optional)"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            size="small"
+            style={{ width: 160 }}
           />
         </div>
         <div style={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>

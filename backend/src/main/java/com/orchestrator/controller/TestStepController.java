@@ -3,6 +3,7 @@ package com.orchestrator.controller;
 import com.orchestrator.dto.ReorderRequest;
 import com.orchestrator.dto.TestStepRequest;
 import com.orchestrator.dto.TestStepResponse;
+import com.orchestrator.service.ExecutionService;
 import com.orchestrator.service.ImportService;
 import com.orchestrator.service.TestStepService;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ public class TestStepController {
 
     private final TestStepService service;
     private final ImportService importService;
+    private final ExecutionService executionService;
 
     @GetMapping
     public List<TestStepResponse> findAll(@PathVariable UUID suiteId) {
@@ -59,6 +61,15 @@ public class TestStepController {
             @PathVariable UUID suiteId,
             @Valid @RequestBody ReorderRequest request) {
         return service.reorder(suiteId, request.getStepIds());
+    }
+
+    @GetMapping("/{stepId}/curl")
+    public Map<String, String> generateCurl(
+            @PathVariable UUID suiteId,
+            @PathVariable UUID stepId,
+            @RequestParam(required = false) UUID environmentId) {
+        String curl = executionService.generateCurl(suiteId, stepId, environmentId);
+        return Map.of("curl", curl);
     }
 
     @PostMapping("/import-curl")

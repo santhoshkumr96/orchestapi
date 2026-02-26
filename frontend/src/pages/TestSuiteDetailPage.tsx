@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   Card,
@@ -26,8 +26,10 @@ import {
   SettingOutlined,
   CopyOutlined,
   ClockCircleOutlined,
+  HolderOutlined,
+  SearchOutlined,
 } from '@ant-design/icons'
-import type { TestStep, HttpMethodType } from '../types/testSuite'
+import type { TestStep, TestStepRequest, HttpMethodType } from '../types/testSuite'
 import { testSuiteApi, testStepApi } from '../services/testSuiteApi'
 import type { StepExecutionResult, SuiteExecutionResult } from '../services/testSuiteApi'
 import { environmentApi } from '../services/environmentApi'
@@ -79,7 +81,10 @@ export default function TestSuiteDetailPage() {
   const [saving, setSaving] = useState(false)
   const [steps, setSteps] = useState<TestStep[]>([])
   const [environments, setEnvironments] = useState<{ label: string; value: string }[]>([])
-  const [expandedStepId, setExpandedStepId] = useState<string | null>(null)
+  const [expandedStepIds, setExpandedStepIds] = useState<Set<string>>(new Set())
+  const [stepSearch, setStepSearch] = useState('')
+  const [draggedStepId, setDraggedStepId] = useState<string | null>(null)
+  const [dragOverStepId, setDragOverStepId] = useState<string | null>(null)
   const [suiteName, setSuiteName] = useState('')
   const [metaOpen, setMetaOpen] = useState(isNew)
   const [envVarNames, setEnvVarNames] = useState<string[]>([])
@@ -228,20 +233,22 @@ export default function TestSuiteDetailPage() {
       message.success('Step deleted')
       const refreshed = await testStepApi.list(id!)
       setSteps(refreshed)
-      if (expandedStepId === stepId) {
-        setExpandedStepId(null)
-      }
+      setExpandedStepIds(prev => { const next = new Set(prev); next.delete(stepId); return next })
     } catch {
       message.error('Failed to delete step')
     }
   }
 
   const toggleExpand = (stepId: string) => {
-    setExpandedStepId((prev) => (prev === stepId ? null : stepId))
+    setExpandedStepIds(prev => {
+      const next = new Set(prev)
+      if (next.has(stepId)) next.delete(stepId)
+      else next.add(stepId)
+      return next
+    })
   }
 
   const handleStepSave = async () => {
-    const savedStepId = expandedStepId
     const scrollY = window.scrollY
     try {
       const refreshed = await testStepApi.list(id!)
@@ -249,13 +256,114 @@ export default function TestSuiteDetailPage() {
     } catch {
       message.error('Failed to refresh steps')
     }
-    // Keep the same step expanded and restore scroll position
-    setExpandedStepId(savedStepId)
     requestAnimationFrame(() => window.scrollTo(0, scrollY))
   }
 
-  const handleStepCancel = () => {
-    setExpandedStepId(null)
+  const closeStep = (stepId: string) => {
+    setExpandedStepIds(prev => { const next = new Set(prev); next.delete(stepId); return next })
+  }
+
+  const handleDuplicateStep = async (step: TestStep) => {
+    try {
+      const request: TestStepRequest = {
+        name: `${step.name} (copy)`,
+        method: step.method,
+        url: step.url,
+        headers: step.headers ?? [],
+        bodyType: step.bodyType,
+        body: step.body ?? '',
+        formDataFields: step.formDataFields ?? [],
+        queryParams: step.queryParams ?? [],
+        cacheable: step.cacheable,
+        cacheTtlSeconds: step.cacheTtlSeconds,
+        dependencyOnly: step.dependencyOnly,
+        disabledDefaultHeaders: step.disabledDefaultHeaders ?? [],
+        groupName: step.groupName ?? '',
+        dependencies: step.dependencies.map(d => ({
+          dependsOnStepId: d.dependsOnStepId,
+          useCache: d.useCache,
+          reuseManualInput: d.reuseManualInput,
+        })),
+        responseHandlers: step.responseHandlers.map(h => ({
+          matchCode: h.matchCode,
+          action: h.action,
+          sideEffectStepId: h.sideEffectStepId,
+          retryCount: h.retryCount,
+          retryDelaySeconds: h.retryDelaySeconds,
+          priority: h.priority,
+        })),
+        extractVariables: step.extractVariables.map(v => ({
+          variableName: v.variableName,
+          jsonPath: v.jsonPath,
+          source: v.source,
+        })),
+        verifications: step.verifications.map(v => ({
+          connectorName: v.connectorName,
+          query: v.query,
+          timeoutSeconds: v.timeoutSeconds,
+          queryTimeoutSeconds: v.queryTimeoutSeconds,
+          preListen: v.preListen,
+          assertions: v.assertions.map(a => ({
+            jsonPath: a.jsonPath,
+            operator: a.operator,
+            expectedValue: a.expectedValue,
+          })),
+        })),
+      }
+      await testStepApi.create(id!, request)
+      message.success('Step duplicated')
+      const refreshed = await testStepApi.list(id!)
+      setSteps(refreshed)
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string } } }
+        message.error(axiosErr.response?.data?.error ?? 'Failed to duplicate step')
+      } else {
+        message.error('Failed to duplicate step')
+      }
+    }
+  }
+
+  const handleDragStart = (e: React.DragEvent, stepId: string) => {
+    setDraggedStepId(stepId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', stepId)
+  }
+
+  const handleDragOver = (e: React.DragEvent, stepId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverStepId !== stepId) setDragOverStepId(stepId)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedStepId(null)
+    setDragOverStepId(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent, targetStepId: string) => {
+    e.preventDefault()
+    if (!draggedStepId || draggedStepId === targetStepId) {
+      handleDragEnd()
+      return
+    }
+    const currentOrder = steps.map(s => s.id)
+    const fromIndex = currentOrder.indexOf(draggedStepId)
+    const toIndex = currentOrder.indexOf(targetStepId)
+    if (fromIndex === -1 || toIndex === -1) { handleDragEnd(); return }
+    const newOrder = [...currentOrder]
+    newOrder.splice(fromIndex, 1)
+    newOrder.splice(toIndex, 0, draggedStepId)
+    const stepMap = new Map(steps.map(s => [s.id, s]))
+    setSteps(newOrder.map(sid => stepMap.get(sid)!).filter(Boolean))
+    handleDragEnd()
+    try {
+      await testStepApi.reorder(id!, newOrder)
+    } catch {
+      message.error('Failed to reorder steps')
+      const refreshed = await testStepApi.list(id!)
+      setSteps(refreshed)
+    }
   }
 
   const handleCopyStepJson = (step: TestStep) => {
@@ -274,6 +382,30 @@ export default function TestSuiteDetailPage() {
     navigator.clipboard.writeText(JSON.stringify(exportData, null, 2))
     message.success('Step JSON copied to clipboard')
   }
+
+  // Group steps by groupName for visual grouping (#49)
+  const groupedSteps = useMemo(() => {
+    const filtered = stepSearch
+      ? steps.filter(s =>
+          s.name.toLowerCase().includes(stepSearch.toLowerCase()) ||
+          s.url.toLowerCase().includes(stepSearch.toLowerCase())
+        )
+      : steps
+    const groups = new Map<string, TestStep[]>()
+    filtered.forEach(s => {
+      const group = s.groupName || ''
+      if (!groups.has(group)) groups.set(group, [])
+      groups.get(group)!.push(s)
+    })
+    return groups
+  }, [steps, stepSearch])
+
+  // Status color for run result badges (#54)
+  const stepStatusColor = (status: string) =>
+    status === 'SUCCESS' ? 'green'
+      : status === 'ERROR' || status === 'FAILURE' ? 'red'
+        : status === 'VERIFICATION_FAILED' ? 'purple'
+          : 'orange'
 
   const openRunModal = (stepId: string | null) => {
     setRunTarget(stepId)
@@ -472,144 +604,216 @@ export default function TestSuiteDetailPage() {
       {!isNew && (
         <Card
           size="small"
-          title="Steps"
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span>Steps</span>
+              <Input
+                placeholder="Search steps..."
+                size="small"
+                allowClear
+                value={stepSearch}
+                onChange={e => setStepSearch(e.target.value)}
+                style={{ width: 180, fontWeight: 'normal' }}
+                prefix={<SearchOutlined style={{ color: '#bbb' }} />}
+              />
+            </div>
+          }
           extra={
             <Space>
+              {steps.length > 0 && (
+                <>
+                  <Button type="text" size="small" onClick={() => setExpandedStepIds(new Set(steps.map(s => s.id)))}>
+                    Expand All
+                  </Button>
+                  <Button type="text" size="small" onClick={() => setExpandedStepIds(new Set())}>
+                    Collapse All
+                  </Button>
+                </>
+              )}
               <Button size="small" icon={<ImportOutlined />} onClick={() => setImportModalOpen(true)}>
                 Import cURL
               </Button>
-              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => setExpandedStepId('_new')}>
+              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => setExpandedStepIds(prev => new Set(prev).add('_new'))}>
                 Add Step
               </Button>
             </Space>
           }
         >
-          {steps.length === 0 && expandedStepId !== '_new' ? (
+          {steps.length === 0 && !expandedStepIds.has('_new') ? (
             <div style={{ textAlign: 'center', color: '#999', padding: 24 }}>
               No steps yet. Click &quot;Add Step&quot; to create one.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {steps.map((step) => (
-                <Card
-                  key={step.id}
-                  size="small"
-                  hoverable
-                  style={{
-                    cursor: 'pointer',
-                    border: expandedStepId === step.id ? '1px solid #1677ff' : undefined,
-                  }}
-                  styles={{ body: { padding: '8px 12px' } }}
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                    }}
-                    onClick={() => toggleExpand(step.id)}
-                  >
-                    {/* Method badge */}
-                    <Tag
-                      color={METHOD_COLORS[step.method]}
-                      style={{ margin: 0, fontWeight: 600, minWidth: 60, textAlign: 'center' }}
-                    >
-                      {step.method}
-                    </Tag>
-
-                    {/* Step name */}
-                    <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{step.name}</span>
-
-                    {/* URL */}
-                    <span
-                      style={{
-                        color: '#888',
-                        flex: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {step.url}
-                    </span>
-
-                    {/* Badges */}
-                    {step.dependencies.length > 0 && (
-                      <Tag style={{ margin: 0 }}>{step.dependencies.length} deps</Tag>
-                    )}
-                    {step.cacheable && (
-                      <Tag color="cyan" style={{ margin: 0 }}>
-                        cached
-                      </Tag>
-                    )}
-                    {step.dependencyOnly && (
-                      <Tag color="default" style={{ margin: 0 }}>Dep Only</Tag>
-                    )}
-
-                    {/* Actions */}
-                    <Space
-                      size={4}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<CaretRightOutlined />}
-                        onClick={() => openRunModal(step.id)}
-                        disabled={running}
-                        title="Run this step"
-                      />
-                      {/* <Button
-                        type="text"
-                        size="small"
-                        icon={<CopyOutlined />}
-                        onClick={() => handleCopyStepJson(step)}
-                        title="Copy as JSON"
-                      /> */}
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<EditOutlined />}
-                        onClick={() => toggleExpand(step.id)}
-                      />
-                      <Popconfirm
-                        title="Delete this step?"
-                        onConfirm={() => handleDeleteStep(step.id)}
-                        okType="danger"
-                      >
-                        <Button type="text" danger size="small" icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    </Space>
-                  </div>
-
-                  {/* Expanded section */}
-                  {expandedStepId === step.id && (
-                    <div
-                      style={{
-                        marginTop: 12,
-                        padding: 12,
-                        background: '#fafafa',
-                        borderRadius: 4,
-                      }}
-                    >
-                      <StepEditor
-                        step={step}
-                        suiteId={id!}
-                        allSteps={steps}
-                        envVarNames={envVarNames}
-                        envHeaders={envHeaders}
-                        connectorNames={connectorNames}
-                        fileKeys={fileKeys}
-                        onSave={handleStepSave}
-                        onCancel={handleStepCancel}
-                      />
+              {Array.from(groupedSteps.entries()).map(([group, groupSteps]) => (
+                <div key={group || '__ungrouped'}>
+                  {group && (
+                    <div style={{ fontWeight: 600, color: '#595959', fontSize: 12, padding: '6px 0 2px', borderBottom: '1px solid #f0f0f0', marginBottom: 4 }}>
+                      {group}
                     </div>
                   )}
-                </Card>
+                  {groupSteps.map((step) => {
+                    const stepResult = runResult?.steps.find(r => r.stepId === step.id)
+                    return (
+                      <Card
+                        key={step.id}
+                        size="small"
+                        hoverable
+                        draggable
+                        onDragStart={e => handleDragStart(e, step.id)}
+                        onDragOver={e => handleDragOver(e, step.id)}
+                        onDrop={e => handleDrop(e, step.id)}
+                        onDragEnd={handleDragEnd}
+                        style={{
+                          cursor: 'pointer',
+                          border: expandedStepIds.has(step.id)
+                            ? '1px solid #1677ff'
+                            : dragOverStepId === step.id && draggedStepId !== step.id
+                              ? '1px dashed #1677ff'
+                              : undefined,
+                          opacity: draggedStepId === step.id ? 0.5 : 1,
+                          transition: 'border 0.2s, opacity 0.2s',
+                          marginBottom: 4,
+                        }}
+                        styles={{ body: { padding: '8px 12px' } }}
+                      >
+                        <div
+                          style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                          onClick={() => toggleExpand(step.id)}
+                        >
+                          {/* Drag handle */}
+                          <HolderOutlined
+                            style={{ color: '#bbb', cursor: 'grab', fontSize: 14 }}
+                            onClick={e => e.stopPropagation()}
+                          />
+
+                          {/* Method badge */}
+                          <Tag
+                            color={METHOD_COLORS[step.method]}
+                            style={{ margin: 0, fontWeight: 600, minWidth: 60, textAlign: 'center' }}
+                          >
+                            {step.method}
+                          </Tag>
+
+                          {/* Step name */}
+                          <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{step.name}</span>
+
+                          {/* URL */}
+                          <span
+                            style={{
+                              color: '#888',
+                              flex: 1,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {step.url}
+                          </span>
+
+                          {/* Badges */}
+                          {step.dependencies.length > 0 && (
+                            <Tag style={{ margin: 0 }}>{step.dependencies.length} deps</Tag>
+                          )}
+                          {step.cacheable && (
+                            <Tag color="cyan" style={{ margin: 0 }}>cached</Tag>
+                          )}
+                          {step.dependencyOnly && (
+                            <Tag color="default" style={{ margin: 0 }}>Dep Only</Tag>
+                          )}
+                          {step.groupName && (
+                            <Tag color="geekblue" style={{ margin: 0 }}>{step.groupName}</Tag>
+                          )}
+
+                          {/* Last run status badge (#54) */}
+                          {stepResult && (
+                            <Tag color={stepStatusColor(stepResult.status)} style={{ margin: 0 }}>
+                              {stepResult.status === 'SUCCESS' ? 'PASS' : stepResult.status}
+                            </Tag>
+                          )}
+
+                          {/* Actions */}
+                          <Space size={4} onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<CaretRightOutlined />}
+                              onClick={() => openRunModal(step.id)}
+                              disabled={running}
+                              title="Run this step"
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<CopyOutlined />}
+                              onClick={async () => {
+                                try {
+                                  const defaultEnvId = form.getFieldValue('defaultEnvironmentId') as string | undefined
+                                  const curl = await testStepApi.generateCurl(id!, step.id, defaultEnvId)
+                                  navigator.clipboard.writeText(curl)
+                                  message.success('cURL copied to clipboard')
+                                } catch {
+                                  message.error('Failed to generate cURL')
+                                }
+                              }}
+                              title="Copy as cURL"
+                            />
+                            <Button
+                              type="text"
+                              size="small"
+                              onClick={() => handleDuplicateStep(step)}
+                              title="Duplicate step"
+                              style={{ fontSize: 12, padding: '0 4px' }}
+                            >
+                              Clone
+                            </Button>
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<EditOutlined />}
+                              onClick={() => toggleExpand(step.id)}
+                            />
+                            <Popconfirm
+                              title="Delete this step?"
+                              onConfirm={() => handleDeleteStep(step.id)}
+                              okType="danger"
+                            >
+                              <Button type="text" danger size="small" icon={<DeleteOutlined />} />
+                            </Popconfirm>
+                          </Space>
+                        </div>
+
+                        {/* Expanded section */}
+                        {expandedStepIds.has(step.id) && (
+                          <div
+                            style={{
+                              marginTop: 12,
+                              padding: 12,
+                              background: '#fafafa',
+                              borderRadius: 4,
+                            }}
+                          >
+                            <StepEditor
+                              step={step}
+                              suiteId={id!}
+                              allSteps={steps}
+                              envVarNames={envVarNames}
+                              envHeaders={envHeaders}
+                              connectorNames={connectorNames}
+                              fileKeys={fileKeys}
+                              onSave={handleStepSave}
+                              onCancel={() => closeStep(step.id)}
+                            />
+                          </div>
+                        )}
+                      </Card>
+                    )
+                  })}
+                </div>
               ))}
 
               {/* New step editor */}
-              {expandedStepId === '_new' && (
+              {expandedStepIds.has('_new') && (
                 <Card
                   size="small"
                   style={{ border: '1px solid #1677ff' }}
@@ -623,7 +827,7 @@ export default function TestSuiteDetailPage() {
                     connectorNames={connectorNames}
                     fileKeys={fileKeys}
                     onSave={handleStepSave}
-                    onCancel={handleStepCancel}
+                    onCancel={() => closeStep('_new')}
                   />
                 </Card>
               )}

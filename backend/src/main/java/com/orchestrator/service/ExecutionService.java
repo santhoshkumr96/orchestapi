@@ -454,6 +454,92 @@ public class ExecutionService {
         return env;
     }
 
+    // ── cURL generation ─────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public String generateCurl(UUID suiteId, UUID stepId, UUID envId) {
+        TestStep step = stepRepo.findByIdWithDetails(stepId)
+                .orElseThrow(() -> new NotFoundException("Test step not found: " + stepId));
+        if (!step.getSuite().getId().equals(suiteId)) {
+            throw new NotFoundException("Step does not belong to suite");
+        }
+
+        Environment env = resolveEnvironment(envId, step.getSuite().getDefaultEnvironmentId());
+
+        Map<String, String> emptyVars = Collections.emptyMap();
+        Map<String, String> emptyInputs = Collections.emptyMap();
+
+        // Resolve URL
+        String url = resolvePlaceholders(step.getUrl(), env, emptyVars);
+        url = resolveManualInputs(url, emptyInputs);
+        if (url.startsWith("/") && env != null && env.getBaseUrl() != null && !env.getBaseUrl().isEmpty()) {
+            String baseUrl = env.getBaseUrl();
+            if (baseUrl.endsWith("/")) baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+            url = baseUrl + url;
+        }
+
+        // Resolve query params
+        List<KeyValuePair> queryParams = parseKeyValuePairs(step.getQueryParams());
+        if (!queryParams.isEmpty()) {
+            StringBuilder qs = new StringBuilder();
+            for (KeyValuePair kv : queryParams) {
+                String key = resolvePlaceholders(kv.getKey(), env, emptyVars);
+                key = resolveManualInputs(key, emptyInputs);
+                String value = resolvePlaceholders(kv.getValue(), env, emptyVars);
+                value = resolveManualInputs(value, emptyInputs);
+                if (qs.length() > 0) qs.append("&");
+                qs.append(key).append("=").append(value);
+            }
+            url += (url.contains("?") ? "&" : "?") + qs;
+        }
+
+        // Build and resolve headers
+        HttpHeaders httpHeaders = buildHeaders(step, env, emptyVars, emptyInputs);
+
+        // Build cURL
+        StringBuilder curl = new StringBuilder("curl -X ").append(step.getMethod().name());
+
+        httpHeaders.forEach((key, values) -> {
+            if (values != null) {
+                for (String value : values) {
+                    curl.append(" \\\n  -H '").append(key).append(": ")
+                            .append(value.replace("'", "'\\''")).append("'");
+                }
+            }
+        });
+
+        // Resolve body
+        if (step.getBodyType() == BodyType.FORM_DATA) {
+            String fieldsJson = step.getFormDataFields();
+            if (fieldsJson != null && !fieldsJson.isBlank() && !"[]".equals(fieldsJson)) {
+                try {
+                    List<FormDataFieldDto> fields = objectMapper.readValue(fieldsJson,
+                            new TypeReference<List<FormDataFieldDto>>() {});
+                    for (FormDataFieldDto field : fields) {
+                        String val = resolvePlaceholders(field.getValue(), env, emptyVars);
+                        val = resolveManualInputs(val, emptyInputs);
+                        if ("file".equals(field.getType())) {
+                            curl.append(" \\\n  -F '").append(field.getKey())
+                                    .append("=@").append(val.replace("'", "'\\''")).append("'");
+                        } else {
+                            curl.append(" \\\n  -F '").append(field.getKey())
+                                    .append("=").append(val.replace("'", "'\\''")).append("'");
+                        }
+                    }
+                } catch (JsonProcessingException ignored) {}
+            }
+        } else if (step.getBodyType() != BodyType.NONE) {
+            String body = resolvePlaceholders(step.getBody(), env, emptyVars);
+            body = resolveManualInputs(body, emptyInputs);
+            if (body != null && !body.isEmpty()) {
+                curl.append(" \\\n  -d '").append(body.replace("'", "'\\''")).append("'");
+            }
+        }
+
+        curl.append(" \\\n  '").append(url).append("'");
+        return curl.toString();
+    }
+
     // ── Graph utilities ─────────────────────────────────────────────────
 
     private Map<UUID, TestStep> buildStepMap(List<TestStep> steps) {
