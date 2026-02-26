@@ -14,6 +14,22 @@
 
 ---
 
+## Screenshots
+
+| Dashboard | Test Suites |
+|:-:|:-:|
+| ![Dashboard](frontend/public/screenshots/dashboard.png) | ![Test Suites](frontend/public/screenshots/test-suite.png) |
+
+| Suite Steps | Environment Detail |
+|:-:|:-:|
+| ![Suite Steps](frontend/public/screenshots/step-editor.png) | ![Environment Detail](frontend/public/screenshots/environment-detail.png) |
+
+| Run History | Environments |
+|:-:|:-:|
+| ![Run History](frontend/public/screenshots/runs.png) | ![Environments](frontend/public/screenshots/environment.png) |
+
+---
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
@@ -113,6 +129,8 @@ The frontend starts on **http://localhost:3000** and proxies API calls to the ba
 Environments hold all the configuration for a target system — variables, headers, infrastructure connectors, and files. Each test suite has a default environment, which can be overridden at run time.
 
 Go to **Environments** in the sidebar, click **Create**, then configure the sections below.
+
+![Environment Detail](frontend/public/screenshots/environment-detail.png)
 
 ### Variables
 
@@ -552,6 +570,8 @@ Use **Preview** to see the next fire times before saving.
 ## Run History
 
 Go to **Runs** page > **Run History** tab.
+
+![Run History](frontend/public/screenshots/runs.png)
 
 **Filters:**
 
