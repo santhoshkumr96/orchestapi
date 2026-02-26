@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "environment_files", schema = "orchestrator")
+@Table(name = "orchestapi_environment_files", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor

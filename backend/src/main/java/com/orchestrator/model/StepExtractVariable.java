@@ -7,7 +7,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "step_extract_variables", schema = "orchestrator")
+@Table(name = "orchestapi_step_extract_variables", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor

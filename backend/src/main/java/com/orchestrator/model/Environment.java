@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "environments", schema = "orchestrator")
+@Table(name = "orchestapi_environments", schema = "orchestrator")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter

@@ -7,7 +7,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "step_dependencies", schema = "orchestrator")
+@Table(name = "orchestapi_step_dependencies", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor

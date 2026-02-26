@@ -7,7 +7,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "environment_variables", schema = "orchestrator")
+@Table(name = "orchestapi_environment_variables", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor

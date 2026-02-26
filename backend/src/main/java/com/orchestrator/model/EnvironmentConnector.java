@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "environment_connectors", schema = "orchestrator")
+@Table(name = "orchestapi_environment_connectors", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor

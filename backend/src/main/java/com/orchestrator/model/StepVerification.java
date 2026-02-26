@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "step_verifications", schema = "orchestrator")
+@Table(name = "orchestapi_step_verifications", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor

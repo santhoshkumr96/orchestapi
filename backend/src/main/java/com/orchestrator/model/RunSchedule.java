@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "run_schedules", schema = "orchestrator")
+@Table(name = "orchestapi_run_schedules", schema = "orchestrator")
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter

@@ -8,7 +8,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "verification_assertions", schema = "orchestrator")
+@Table(name = "orchestapi_verification_assertions", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor
