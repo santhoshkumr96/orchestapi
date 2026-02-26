@@ -1,0 +1,26 @@
+OrchestAPI
+Copyright (c) 2026 OrchestAPI Contributors
+
+This product includes software developed by third parties under various
+open source licenses.
+
+Backend Dependencies:
+  - Spring Boot (Apache 2.0) - https://spring.io/projects/spring-boot
+  - PostgreSQL JDBC Driver (BSD-2-Clause) - https://jdbc.postgresql.org/
+  - MySQL Connector/J (GPL 2.0 with FOSS Exception) - https://dev.mysql.com/downloads/connector/j/
+  - Oracle JDBC Driver (Oracle Free Use Terms and Conditions) - https://www.oracle.com/database/technologies/appdev/jdbc.html
+  - Microsoft SQL Server JDBC Driver (MIT) - https://github.com/microsoft/mssql-jdbc
+  - Jedis (MIT) - https://github.com/redis/jedis
+  - Apache Kafka Clients (Apache 2.0) - https://kafka.apache.org/
+  - RabbitMQ AMQP Client (Apache 2.0 / MPL 2.0) - https://www.rabbitmq.com/
+  - MongoDB Java Driver (Apache 2.0) - https://www.mongodb.com/docs/drivers/java/sync/current/
+  - Flyway (Apache 2.0) - https://flywaydb.org/
+  - Lombok (MIT) - https://projectlombok.org/
+
+Frontend Dependencies:
+  - React (MIT) - https://react.dev/
+  - Ant Design (MIT) - https://ant.design/
+  - Axios (MIT) - https://axios-http.com/
+  - React Router (MIT) - https://reactrouter.com/
+  - Vite (MIT) - https://vite.dev/
+  - cronstrue (MIT) - https://github.com/bradymholt/cRonstrue

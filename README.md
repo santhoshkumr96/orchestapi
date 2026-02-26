@@ -145,4 +145,4 @@ The **Runs** page > **Run History** tab shows all past executions (manual and sc
 
 ## License
 
-MIT
+[MIT](LICENSE) — see [NOTICE](NOTICE) for third-party licenses.
