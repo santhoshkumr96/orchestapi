@@ -251,11 +251,17 @@ Extract values from a step's response for use in later steps.
 
 **Extraction Sources:**
 
-| Source | JSON Path Example | Description |
-|--------|-------------------|-------------|
+| Source | JSON Path / Key | Description |
+|--------|-----------------|-------------|
 | `RESPONSE_BODY` | `$.data.id` | Extract from JSON response body |
 | `RESPONSE_HEADER` | `Authorization` | Extract a response header value by name |
-| `STATUS_CODE` | *(ignored)* | Stores the HTTP status code as a string (e.g., `"200"`) |
+| `STATUS_CODE` | *(not used)* | Stores the HTTP status code as a string (e.g., `"200"`) |
+| `REQUEST_BODY` | `$.orderId` | Extract from the resolved request body (JSON path) |
+| `REQUEST_HEADER` | `X-Request-ID` | Extract a resolved request header value by name (e.g., auto-generated UUID) |
+| `QUERY_PARAM` | `page` | Extract a resolved query parameter value by name |
+| `REQUEST_URL` | *(not used)* | Stores the full resolved request URL |
+
+All values are **resolved** — you get the actual runtime value, not the placeholder template. For example, extracting from `REQUEST_HEADER` with key `X-Request-ID` returns the generated UUID, not `${REQUEST_ID}`.
 
 **JSON Path Syntax:**
 

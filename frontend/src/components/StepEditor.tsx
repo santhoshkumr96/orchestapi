@@ -98,6 +98,10 @@ const SOURCE_OPTIONS: { label: string; value: ExtractionSourceType }[] = [
   { label: 'Response Body', value: 'RESPONSE_BODY' },
   { label: 'Response Header', value: 'RESPONSE_HEADER' },
   { label: 'Status Code', value: 'STATUS_CODE' },
+  { label: 'Request Body', value: 'REQUEST_BODY' },
+  { label: 'Request Header', value: 'REQUEST_HEADER' },
+  { label: 'Query Param', value: 'QUERY_PARAM' },
+  { label: 'Request URL', value: 'REQUEST_URL' },
 ]
 
 const ASSERTION_OPERATOR_OPTIONS: { label: string; value: AssertionOperatorType }[] = [
@@ -729,17 +733,27 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, conne
       ),
     },
     {
-      title: 'JSON Path',
+      title: 'JSON Path / Key',
       dataIndex: 'jsonPath',
       width: '30%',
-      render: (_: string, record: ExtractRow, index: number) => (
-        <Input
-          placeholder="e.g. $.data.accessToken"
-          value={record.jsonPath}
-          onChange={(e) => updateExtractVariable(index, 'jsonPath', e.target.value)}
-          size="small"
-        />
-      ),
+      render: (_: string, record: ExtractRow, index: number) => {
+        const ph = record.source === 'RESPONSE_HEADER' || record.source === 'REQUEST_HEADER'
+          ? 'Header name, e.g. Authorization'
+          : record.source === 'QUERY_PARAM'
+            ? 'Param name, e.g. page'
+            : record.source === 'STATUS_CODE' || record.source === 'REQUEST_URL'
+              ? '(not used)'
+              : 'e.g. $.data.accessToken'
+        return (
+          <Input
+            placeholder={ph}
+            value={record.jsonPath}
+            onChange={(e) => updateExtractVariable(index, 'jsonPath', e.target.value)}
+            size="small"
+            disabled={record.source === 'STATUS_CODE' || record.source === 'REQUEST_URL'}
+          />
+        )
+      },
     },
     {
       title: 'Source',

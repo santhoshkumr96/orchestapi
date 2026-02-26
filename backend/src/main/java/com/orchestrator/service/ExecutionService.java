@@ -1112,6 +1112,12 @@ public class ExecutionService {
         result.setRequestHeaders(requestHeadersMap);
         result.setRequestQueryParams(resolvedQueryParams);
 
+        // 11. Extract variables from both response AND request context (all resolved values)
+        Map<String, String> extracted = extractVariables(step,
+                result.getResponseBody(), result.getResponseHeaders() != null ? result.getResponseHeaders() : Collections.emptyMap(), result.getResponseCode(),
+                requestBodyDisplay, requestHeadersMap, resolvedQueryParams, url);
+        result.setExtractedVariables(extracted);
+
         return result;
     }
 
@@ -1308,9 +1314,6 @@ public class ExecutionService {
             }
         }
 
-        // 9. Extract variables from response
-        Map<String, String> extracted = extractVariables(step, responseBody, responseHeaders, responseCode);
-
         long durationMs = System.currentTimeMillis() - stepStart;
 
         return StepExecutionResult.builder()
@@ -1323,7 +1326,7 @@ public class ExecutionService {
                 .durationMs(durationMs)
                 .errorMessage(errorMessage)
                 .fromCache(false)
-                .extractedVariables(extracted)
+                .extractedVariables(Collections.emptyMap())
                 .build();
     }
 
@@ -1405,7 +1408,11 @@ public class ExecutionService {
 
     private Map<String, String> extractVariables(TestStep step, String responseBody,
                                                   Map<String, String> responseHeaders,
-                                                  int responseCode) {
+                                                  int responseCode,
+                                                  String requestBody,
+                                                  Map<String, String> requestHeaders,
+                                                  Map<String, String> queryParams,
+                                                  String requestUrl) {
         Map<String, String> extracted = new LinkedHashMap<>();
 
         if (step.getExtractVariables() == null || step.getExtractVariables().isEmpty()) {
@@ -1418,11 +1425,20 @@ public class ExecutionService {
                 String value = switch (var.getSource()) {
                     case RESPONSE_BODY -> extractJsonPath(responseBody, var.getJsonPath());
                     case RESPONSE_HEADER -> {
-                        // jsonPath here is the header name
                         String headerVal = responseHeaders.get(var.getJsonPath());
                         yield headerVal != null ? headerVal : "";
                     }
                     case STATUS_CODE -> String.valueOf(responseCode);
+                    case REQUEST_BODY -> extractJsonPath(requestBody != null ? requestBody : "", var.getJsonPath());
+                    case REQUEST_HEADER -> {
+                        String headerVal = requestHeaders != null ? requestHeaders.get(var.getJsonPath()) : null;
+                        yield headerVal != null ? headerVal : "";
+                    }
+                    case QUERY_PARAM -> {
+                        String paramVal = queryParams != null ? queryParams.get(var.getJsonPath()) : null;
+                        yield paramVal != null ? paramVal : "";
+                    }
+                    case REQUEST_URL -> requestUrl != null ? requestUrl : "";
                 };
                 extracted.put(qualifiedName, value);
             } catch (Exception e) {

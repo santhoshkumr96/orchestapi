@@ -1,6 +1,6 @@
 export type HttpMethodType = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
 export type ResponseActionType = 'SUCCESS' | 'ERROR' | 'FIRE_SIDE_EFFECT' | 'RETRY'
-export type ExtractionSourceType = 'RESPONSE_BODY' | 'RESPONSE_HEADER' | 'STATUS_CODE'
+export type ExtractionSourceType = 'RESPONSE_BODY' | 'RESPONSE_HEADER' | 'STATUS_CODE' | 'REQUEST_BODY' | 'REQUEST_HEADER' | 'QUERY_PARAM' | 'REQUEST_URL'
 export type BodyType = 'NONE' | 'JSON' | 'FORM_DATA'
 
 export interface FormDataField {
