@@ -1129,8 +1129,11 @@ public class ExecutionService {
             }
         }
 
+        // Collect warnings about unresolved variables
+        List<String> stepWarnings = new ArrayList<>();
+
         // 3. Build URL
-        String url = resolvePlaceholders(step.getUrl(), env, allExtractedVars);
+        String url = resolvePlaceholders(step.getUrl(), env, allExtractedVars, stepWarnings);
         url = resolveManualInputs(url, manualInputValues);
         if (url.startsWith("/") && env != null && env.getBaseUrl() != null && !env.getBaseUrl().isEmpty()) {
             // Strip trailing slash from baseUrl before prepending
@@ -1147,9 +1150,9 @@ public class ExecutionService {
         if (!queryParams.isEmpty()) {
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
             for (KeyValuePair kv : queryParams) {
-                String resolvedKey = resolvePlaceholders(kv.getKey(), env, allExtractedVars);
+                String resolvedKey = resolvePlaceholders(kv.getKey(), env, allExtractedVars, stepWarnings);
                 resolvedKey = resolveManualInputs(resolvedKey, manualInputValues);
-                String resolvedValue = resolvePlaceholders(kv.getValue(), env, allExtractedVars);
+                String resolvedValue = resolvePlaceholders(kv.getValue(), env, allExtractedVars, stepWarnings);
                 resolvedValue = resolveManualInputs(resolvedValue, manualInputValues);
                 builder.queryParam(resolvedKey, resolvedValue);
                 resolvedQueryParams.put(resolvedKey, resolvedValue);
@@ -1171,7 +1174,7 @@ public class ExecutionService {
             body = formData;
             requestBodyDisplay = "[multipart/form-data: " + formData.size() + " fields]";
         } else {
-            String textBody = resolvePlaceholders(step.getBody(), env, allExtractedVars);
+            String textBody = resolvePlaceholders(step.getBody(), env, allExtractedVars, stepWarnings);
             textBody = resolveManualInputs(textBody, manualInputValues);
             body = textBody;
             requestBodyDisplay = textBody;
@@ -1198,7 +1201,12 @@ public class ExecutionService {
         result.setRequestHeaders(requestHeadersMap);
         result.setRequestQueryParams(resolvedQueryParams);
 
-        // 11. Extract variables from both response AND request context (all resolved values)
+        // 11. Set warnings about unresolved variables
+        if (!stepWarnings.isEmpty()) {
+            result.setWarnings(stepWarnings);
+        }
+
+        // 12. Extract variables from both response AND request context (all resolved values)
         Map<String, String> extracted = extractVariables(step,
                 result.getResponseBody(), result.getResponseHeaders() != null ? result.getResponseHeaders() : Collections.emptyMap(), result.getResponseCode(),
                 requestBodyDisplay, requestHeadersMap, resolvedQueryParams, url);
@@ -1580,16 +1588,62 @@ public class ExecutionService {
         }
 
         // Replace {{stepName.variableName}} with extracted variables
-        if (extractedVars != null && !extractedVars.isEmpty()) {
-            Matcher stepMatcher = STEP_VAR_PATTERN.matcher(result);
+        Matcher stepMatcher = STEP_VAR_PATTERN.matcher(result);
+        if (stepMatcher.find()) {
             StringBuilder sb = new StringBuilder();
+            stepMatcher.reset();
             while (stepMatcher.find()) {
                 String varRef = stepMatcher.group(1);
-                String replacement = extractedVars.getOrDefault(varRef, "{{" + varRef + "}}");
-                stepMatcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
+                if (extractedVars != null && extractedVars.containsKey(varRef)) {
+                    stepMatcher.appendReplacement(sb, Matcher.quoteReplacement(extractedVars.get(varRef)));
+                } else {
+                    // Variable not found — log warning to help diagnose missing dependencies/extractions
+                    String[] parts = varRef.split("\\.", 2);
+                    if (parts.length == 2) {
+                        log.warn("Unresolved variable '{{{{{}}}}}': step '{}' either is not a dependency, "
+                                + "was not executed, or does not extract variable '{}'. "
+                                + "Available variables: {}",
+                                varRef, parts[0], parts[1],
+                                extractedVars != null ? extractedVars.keySet() : "[]");
+                    } else {
+                        log.warn("Unresolved variable '{{{{{}}}}}': not found in extracted variables. "
+                                + "Available variables: {}",
+                                varRef, extractedVars != null ? extractedVars.keySet() : "[]");
+                    }
+                    stepMatcher.appendReplacement(sb, Matcher.quoteReplacement("{{" + varRef + "}}"));
+                }
             }
             stepMatcher.appendTail(sb);
             result = sb.toString();
+        }
+
+        return result;
+    }
+
+    /**
+     * Overloaded version that collects unresolved variable warnings into the provided list.
+     */
+    String resolvePlaceholders(String text, Environment env, Map<String, String> extractedVars, List<String> warnings) {
+        if (text == null || text.isEmpty()) return text;
+
+        // First do env var + step var resolution via the main method
+        String result = resolvePlaceholders(text, env, extractedVars);
+
+        // Now detect any remaining unresolved {{...}} placeholders and add warnings
+        if (warnings != null) {
+            Matcher remaining = STEP_VAR_PATTERN.matcher(result);
+            while (remaining.find()) {
+                String varRef = remaining.group(1);
+                String[] parts = varRef.split("\\.", 2);
+                if (parts.length == 2) {
+                    warnings.add("Unresolved variable '{{" + varRef + "}}': step '" + parts[0]
+                            + "' is not a dependency, was not executed, or does not extract variable '" + parts[1]
+                            + "'. Available: " + (extractedVars != null ? extractedVars.keySet() : "[]"));
+                } else {
+                    warnings.add("Unresolved variable '{{" + varRef + "}}': not found in extracted variables. Available: "
+                            + (extractedVars != null ? extractedVars.keySet() : "[]"));
+                }
+            }
         }
 
         return result;

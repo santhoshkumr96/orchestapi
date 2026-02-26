@@ -31,4 +31,8 @@ public class StepExecutionResult {
     private String requestBody;
     private Map<String, String> requestHeaders;
     private Map<String, String> requestQueryParams;
+
+    // Warnings (e.g. unresolved variable placeholders)
+    @Builder.Default
+    private List<String> warnings = new ArrayList<>();
 }

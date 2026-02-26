@@ -43,6 +43,7 @@ export interface StepExecutionResult {
   requestBody: string
   requestHeaders: Record<string, string>
   requestQueryParams: Record<string, string>
+  warnings: string[]
 }
 
 export interface SuiteExecutionResult {
