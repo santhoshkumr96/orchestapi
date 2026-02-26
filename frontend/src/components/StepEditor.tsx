@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import {
-  Collapse,
+  Tabs,
   Input,
   Select,
   Button,
@@ -10,6 +10,7 @@ import {
   Popconfirm,
   Space,
   Checkbox,
+  Badge,
   message,
 } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -812,88 +813,109 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
   ]
 
   // ====================
-  // Default active keys
+  // Tab badge counts
   // ====================
-  const defaultActiveKeys = isNew
-    ? ['basic', 'headers', 'queryParams', 'body', 'dependencies', 'responseHandlers', 'extractVariables', 'cacheSettings', 'verifications']
-    : ['basic']
+  const totalHeaders = envHeaders.length + headers.length
+  const totalParams = queryParams.length
+
+  // ====================
+  // Method color
+  // ====================
+  const METHOD_COLORS: Record<string, string> = {
+    GET: '#52c41a', POST: '#1677ff', PUT: '#fa8c16', DELETE: '#ff4d4f', PATCH: '#722ed1',
+  }
 
   // ====================
   // Render
   // ====================
   return (
-    <div>
-      <Collapse
-        defaultActiveKey={defaultActiveKeys}
-        style={{ background: 'transparent' }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* ===== REQUEST BAR (Postman-style) ===== */}
+      <div style={{ padding: '12px 0 8px', borderBottom: '1px solid #f0f0f0' }}>
+        <div style={{ marginBottom: 8 }}>
+          <Input
+            placeholder="Step name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            size="small"
+            style={{ fontWeight: 500 }}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: 0, alignItems: 'stretch' }}>
+          <Select
+            showSearch
+            value={method}
+            onChange={(val) => setMethod(val)}
+            size="middle"
+            style={{ width: 110, flexShrink: 0 }}
+            filterOption={(input, option) =>
+              (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+            }
+            options={METHOD_OPTIONS.map((opt) => ({
+              label: (
+                <span style={{ color: opt.color, fontWeight: 700, fontSize: 13 }}>{opt.label}</span>
+              ),
+              value: opt.value,
+            }))}
+            dropdownStyle={{ minWidth: 110 }}
+          />
+          <div style={{ flex: 1, marginLeft: -1 }}>
+            <PlaceholderInput
+              placeholder="Enter request URL — e.g. /api/users/${userId} or /posts/{{step.id}}"
+              value={url}
+              onChange={setUrl}
+              envVars={envVarNames}
+              depSteps={depStepInfos}
+              size="middle"
+            />
+          </div>
+        </div>
+        <div style={{ marginTop: 6 }}>
+          <Space size={16}>
+            <Space size={4}>
+              <Switch size="small" checked={dependencyOnly} onChange={setDependencyOnly} />
+              <span style={{ color: '#595959', fontSize: 12 }}>Dependency only</span>
+            </Space>
+            <Space size={4}>
+              <Switch size="small" checked={cacheable} onChange={(checked) => setCacheable(checked)} />
+              <span style={{ color: '#595959', fontSize: 12 }}>Cacheable</span>
+            </Space>
+            {cacheable && (
+              <Space size={4}>
+                <span style={{ color: '#595959', fontSize: 12 }}>TTL:</span>
+                <InputNumber
+                  value={cacheTtlSeconds}
+                  onChange={(val) => setCacheTtlSeconds(val ?? 0)}
+                  min={0}
+                  placeholder="0 = entire run"
+                  size="small"
+                  style={{ width: 120 }}
+                />
+              </Space>
+            )}
+          </Space>
+        </div>
+      </div>
+
+      {/* ===== HORIZONTAL TABS (Postman-style) ===== */}
+      <Tabs
+        defaultActiveKey="headers"
+        size="small"
+        style={{ marginTop: 4 }}
+        tabBarStyle={{ marginBottom: 8 }}
         items={[
           {
-            key: 'basic',
-            label: 'Basic Info',
-            children: (
-              <>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                  <Input
-                    placeholder="Step name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    size="small"
-                    style={{ flex: 1 }}
-                  />
-                  <Select
-                    showSearch
-                    value={method}
-                    onChange={(val) => setMethod(val)}
-                    size="small"
-                    style={{ width: 120 }}
-                    filterOption={(input, option) =>
-                      (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                    }
-                    options={METHOD_OPTIONS.map((opt) => ({
-                      label: (
-                        <span style={{ color: opt.color, fontWeight: 600 }}>{opt.label}</span>
-                      ),
-                      value: opt.value,
-                    }))}
-                  />
-                  <div style={{ flex: 2 }}>
-                    <PlaceholderInput
-                      placeholder="e.g. /api/users/${userId} or /posts/{{step.id}}"
-                      value={url}
-                      onChange={setUrl}
-                      envVars={envVarNames}
-                      depSteps={depStepInfos}
-                      size="small"
-                    />
-                  </div>
-                </div>
-                <div style={{ marginTop: 8 }}>
-                  <Space>
-                    <Switch size="small" checked={dependencyOnly} onChange={setDependencyOnly} />
-                    <span style={{ color: '#595959', fontSize: 12 }}>Dependency only (skip during suite runs)</span>
-                  </Space>
-                </div>
-              </>
-            ),
-          },
-          {
             key: 'headers',
-            label: 'Headers',
-            extra: (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addHeader()
-                }}
-              >
-                Add Header
-              </Button>
+            label: (
+              <span>
+                Headers
+                {totalHeaders > 0 && (
+                  <Badge count={totalHeaders} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                )}
+              </span>
             ),
             children: (
-              <>
+              <div>
                 {envHeaders.length > 0 && (
                   <div style={{ marginBottom: headers.length > 0 ? 12 : 0 }}>
                     <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>Default Headers (from environment)</div>
@@ -944,7 +966,6 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                                     onChange={(e) => {
                                       const val = e.target.value
                                       setDefaultHeaderOverrides((prev) => {
-                                        // If value matches original, remove override
                                         if (val === eh.headerValue) {
                                           const { [eh.headerKey]: _, ...rest } = prev
                                           return rest
@@ -972,36 +993,38 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                   rowKey="_clientId"
                   pagination={false}
                   size="small"
-                  locale={{ emptyText: envHeaders.length > 0 ? 'No step-specific headers.' : 'No headers. Click "Add Header" to create one.' }}
+                  locale={{ emptyText: envHeaders.length > 0 ? 'No step-specific headers' : 'No headers added' }}
                 />
-              </>
+                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addHeader} style={{ marginTop: 8 }}>
+                  Add Header
+                </Button>
+              </div>
             ),
           },
           {
-            key: 'queryParams',
-            label: 'Query Params',
-            extra: (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addQueryParam()
-                }}
-              >
-                Add Param
-              </Button>
+            key: 'params',
+            label: (
+              <span>
+                Params
+                {totalParams > 0 && (
+                  <Badge count={totalParams} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                )}
+              </span>
             ),
             children: (
-              <Table
-                columns={kvColumns(updateQueryParam, removeQueryParam)}
-                dataSource={queryParams}
-                rowKey="_clientId"
-                pagination={false}
-                size="small"
-                locale={{ emptyText: 'No query params. Click "Add Param" to create one.' }}
-              />
+              <div>
+                <Table
+                  columns={kvColumns(updateQueryParam, removeQueryParam)}
+                  dataSource={queryParams}
+                  rowKey="_clientId"
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: 'No query params added' }}
+                />
+                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addQueryParam} style={{ marginTop: 8 }}>
+                  Add Param
+                </Button>
+              </div>
             ),
           },
           {
@@ -1009,448 +1032,407 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
             label: (
               <span>
                 Body
-                <Select
-                  size="small"
-                  value={bodyType}
-                  onChange={(val) => { setBodyType(val); setJsonError(null) }}
-                  options={[
-                    { label: 'None', value: 'NONE' },
-                    { label: 'JSON', value: 'JSON' },
-                    { label: 'Form Data', value: 'FORM_DATA' },
-                  ]}
-                  style={{ width: 120, marginLeft: 8 }}
-                  onClick={(e) => e.stopPropagation()}
-                />
+                {bodyType !== 'NONE' && (
+                  <span style={{ fontSize: 11, color: '#1677ff', marginLeft: 4 }}>({bodyType === 'JSON' ? 'JSON' : 'Form'})</span>
+                )}
               </span>
             ),
-            extra: bodyType === 'FORM_DATA' ? (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => { e.stopPropagation(); addFormDataField() }}
-              >
-                Add Field
-              </Button>
-            ) : undefined,
-            children: bodyType === 'NONE' ? (
-              <div style={{ color: '#999', fontSize: 12, padding: '8px 0' }}>No request body. Select JSON or Form Data above.</div>
-            ) : bodyType === 'JSON' ? (
+            children: (
               <div>
-                <PlaceholderInput
-                  mode="textarea"
-                  rows={8}
-                  value={body}
-                  onChange={handleBodyChange}
-                  envVars={envVarNames}
-                  depSteps={depStepInfos}
-                  placeholder='Request body (JSON). Supports: ${VAR} and {{stepName.path}}'
-                />
-                {jsonError && (
-                  <div style={{ color: '#ff4d4f', fontSize: 11, marginTop: 4 }}>JSON Error: {jsonError}</div>
+                <div style={{ marginBottom: 8 }}>
+                  <Select
+                    size="small"
+                    value={bodyType}
+                    onChange={(val) => { setBodyType(val); setJsonError(null) }}
+                    options={[
+                      { label: 'None', value: 'NONE' },
+                      { label: 'JSON', value: 'JSON' },
+                      { label: 'Form Data', value: 'FORM_DATA' },
+                    ]}
+                    style={{ width: 140 }}
+                  />
+                </div>
+                {bodyType === 'NONE' ? (
+                  <div style={{ color: '#999', fontSize: 12, padding: '8px 0' }}>No request body. Select JSON or Form Data above.</div>
+                ) : bodyType === 'JSON' ? (
+                  <div>
+                    <PlaceholderInput
+                      mode="textarea"
+                      rows={8}
+                      value={body}
+                      onChange={handleBodyChange}
+                      envVars={envVarNames}
+                      depSteps={depStepInfos}
+                      placeholder='Request body (JSON). Supports: ${VAR} and {{stepName.path}}'
+                    />
+                    {jsonError && (
+                      <div style={{ color: '#ff4d4f', fontSize: 11, marginTop: 4 }}>JSON Error: {jsonError}</div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <Table
+                      columns={[
+                        {
+                          title: 'Key',
+                          dataIndex: 'key',
+                          width: '25%',
+                          render: (_: unknown, __: unknown, index: number) => (
+                            <Input
+                              size="small"
+                              value={formDataFields[index].key}
+                              onChange={(e) => updateFormDataField(index, 'key', e.target.value)}
+                              placeholder="Field name"
+                            />
+                          ),
+                        },
+                        {
+                          title: 'Type',
+                          dataIndex: 'type',
+                          width: 100,
+                          render: (_: unknown, __: unknown, index: number) => (
+                            <Select
+                              size="small"
+                              value={formDataFields[index].type}
+                              onChange={(val) => updateFormDataField(index, 'type', val)}
+                              options={[
+                                { label: 'Text', value: 'text' },
+                                { label: 'File', value: 'file' },
+                              ]}
+                              style={{ width: '100%' }}
+                            />
+                          ),
+                        },
+                        {
+                          title: 'Value',
+                          dataIndex: 'value',
+                          render: (_: unknown, __: unknown, index: number) => (
+                            <PlaceholderInput
+                              value={formDataFields[index].value}
+                              onChange={(val) => updateFormDataField(index, 'value', val)}
+                              envVars={envVarNames}
+                              depSteps={depStepInfos}
+                              fileKeys={fileKeys}
+                              placeholder={formDataFields[index].type === 'file' ? '${FILE:fileKey}' : 'Value or ${VAR}'}
+                            />
+                          ),
+                        },
+                        {
+                          title: '',
+                          width: 40,
+                          render: (_: unknown, __: unknown, index: number) => (
+                            <Popconfirm title="Remove?" onConfirm={() => removeFormDataField(index)} okType="danger">
+                              <Button type="text" danger size="small" icon={<DeleteOutlined />} />
+                            </Popconfirm>
+                          ),
+                        },
+                      ]}
+                      dataSource={formDataFields}
+                      rowKey="_clientId"
+                      pagination={false}
+                      size="small"
+                      locale={{ emptyText: 'No form fields added' }}
+                    />
+                    <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addFormDataField} style={{ marginTop: 8 }}>
+                      Add Field
+                    </Button>
+                  </div>
                 )}
               </div>
-            ) : (
-              <Table
-                columns={[
-                  {
-                    title: 'Key',
-                    dataIndex: 'key',
-                    width: '25%',
-                    render: (_: unknown, __: unknown, index: number) => (
-                      <Input
-                        size="small"
-                        value={formDataFields[index].key}
-                        onChange={(e) => updateFormDataField(index, 'key', e.target.value)}
-                        placeholder="Field name"
-                      />
-                    ),
-                  },
-                  {
-                    title: 'Type',
-                    dataIndex: 'type',
-                    width: 100,
-                    render: (_: unknown, __: unknown, index: number) => (
-                      <Select
-                        size="small"
-                        value={formDataFields[index].type}
-                        onChange={(val) => updateFormDataField(index, 'type', val)}
-                        options={[
-                          { label: 'Text', value: 'text' },
-                          { label: 'File', value: 'file' },
-                        ]}
-                        style={{ width: '100%' }}
-                      />
-                    ),
-                  },
-                  {
-                    title: 'Value',
-                    dataIndex: 'value',
-                    render: (_: unknown, __: unknown, index: number) => (
-                      <PlaceholderInput
-                        value={formDataFields[index].value}
-                        onChange={(val) => updateFormDataField(index, 'value', val)}
-                        envVars={envVarNames}
-                        depSteps={depStepInfos}
-                        fileKeys={fileKeys}
-                        placeholder={formDataFields[index].type === 'file' ? '${FILE:fileKey}' : 'Value or ${VAR}'}
-                      />
-                    ),
-                  },
-                  {
-                    title: '',
-                    width: 40,
-                    render: (_: unknown, __: unknown, index: number) => (
-                      <Popconfirm title="Remove?" onConfirm={() => removeFormDataField(index)} okType="danger">
-                        <Button type="text" danger size="small" icon={<DeleteOutlined />} />
-                      </Popconfirm>
-                    ),
-                  },
-                ]}
-                dataSource={formDataFields}
-                rowKey="_clientId"
-                pagination={false}
-                size="small"
-                locale={{ emptyText: 'No fields. Click "Add Field" to create one.' }}
-              />
             ),
           },
           {
             key: 'dependencies',
-            label: 'Dependencies',
-            extra: (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addDependency()
-                }}
-              >
-                Add Dependency
-              </Button>
+            label: (
+              <span>
+                Dependencies
+                {dependencies.length > 0 && (
+                  <Badge count={dependencies.length} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                )}
+              </span>
             ),
             children: (
-              <Table
-                columns={dependencyColumns}
-                dataSource={dependencies}
-                rowKey="_clientId"
-                pagination={false}
-                size="small"
-                locale={{ emptyText: 'No dependencies. Click "Add Dependency" to create one.' }}
-              />
+              <div>
+                <Table
+                  columns={dependencyColumns}
+                  dataSource={dependencies}
+                  rowKey="_clientId"
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: 'No dependencies added' }}
+                />
+                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addDependency} style={{ marginTop: 8 }}>
+                  Add Dependency
+                </Button>
+              </div>
             ),
           },
           {
             key: 'responseHandlers',
-            label: 'Response Handlers',
-            extra: (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addHandler()
-                }}
-              >
-                Add Handler
-              </Button>
+            label: (
+              <span>
+                Handlers
+                {responseHandlers.length > 0 && (
+                  <Badge count={responseHandlers.length} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                )}
+              </span>
             ),
             children: (
-              <Table
-                columns={handlerColumns}
-                dataSource={responseHandlers}
-                rowKey="_clientId"
-                pagination={false}
-                size="small"
-                locale={{
-                  emptyText: 'No response handlers. Click "Add Handler" to create one.',
-                }}
-              />
+              <div>
+                <Table
+                  columns={handlerColumns}
+                  dataSource={responseHandlers}
+                  rowKey="_clientId"
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: 'No response handlers added' }}
+                />
+                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addHandler} style={{ marginTop: 8 }}>
+                  Add Handler
+                </Button>
+              </div>
             ),
           },
           {
             key: 'extractVariables',
-            label: 'Extract Variables',
-            extra: (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addExtractVariable()
-                }}
-              >
-                Add Variable
-              </Button>
-            ),
-            children: (
-              <Table
-                columns={extractColumns}
-                dataSource={extractVariables}
-                rowKey="_clientId"
-                pagination={false}
-                size="small"
-                locale={{
-                  emptyText: 'No extract variables. Click "Add Variable" to create one.',
-                }}
-              />
-            ),
-          },
-          {
-            key: 'cacheSettings',
-            label: 'Cache Settings',
-            children: (
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                <Space>
-                  <span>Cacheable:</span>
-                  <Switch
-                    size="small"
-                    checked={cacheable}
-                    onChange={(checked) => setCacheable(checked)}
-                  />
-                </Space>
-                {cacheable && (
-                  <Space>
-                    <span>Cache TTL (seconds):</span>
-                    <InputNumber
-                      value={cacheTtlSeconds}
-                      onChange={(val) => setCacheTtlSeconds(val ?? 0)}
-                      min={0}
-                      placeholder="0 = entire run"
-                      size="small"
-                      style={{ width: 160 }}
-                    />
-                  </Space>
+            label: (
+              <span>
+                Variables
+                {extractVariables.length > 0 && (
+                  <Badge count={extractVariables.length} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
                 )}
+              </span>
+            ),
+            children: (
+              <div>
+                <Table
+                  columns={extractColumns}
+                  dataSource={extractVariables}
+                  rowKey="_clientId"
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: 'No extract variables added' }}
+                />
+                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addExtractVariable} style={{ marginTop: 8 }}>
+                  Add Variable
+                </Button>
               </div>
             ),
           },
           {
             key: 'verifications',
-            label: `Verifications (${verifications.length})`,
-            extra: (
-              <Button
-                type="dashed"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  addVerification()
-                }}
-              >
-                Add Verification
-              </Button>
+            label: (
+              <span>
+                Verifications
+                {verifications.length > 0 && (
+                  <Badge count={verifications.length} size="small" style={{ marginLeft: 6, backgroundColor: '#722ed1' }} />
+                )}
+              </span>
             ),
-            children: verifications.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#999', padding: 16 }}>
-                No verifications. Click &quot;Add Verification&quot; to create one.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {verifications.map((v, vIdx) => {
-                  const connectorType = connectorNames.find((c) => c.name === v.connectorName)?.type
-                  const showPreListen = connectorType === 'KAFKA' || connectorType === 'RABBITMQ'
-                  return (
-                    <div
-                      key={v._clientId}
-                      style={{
-                        border: '1px solid #f0f0f0',
-                        borderRadius: 4,
-                        padding: 12,
-                        background: '#fafafa',
-                      }}
-                    >
-                      {/* Verification header row */}
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Connector</div>
-                          <Select
-                            showSearch
-                            value={v.connectorName || undefined}
-                            onChange={(val) => updateVerification(vIdx, 'connectorName', val)}
-                            placeholder="Select connector"
-                            size="small"
-                            style={{ width: '100%' }}
-                            options={connectorNames.map((c) => ({ label: `${c.name} (${c.type})`, value: c.name }))}
-                            filterOption={(input, option) =>
-                              (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
-                            }
-                          />
-                        </div>
-                        <div style={{ width: 90 }}>
-                          <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>
-                            {showPreListen ? 'Timeout (s)' : 'Delay (s)'}
-                          </div>
-                          <InputNumber
-                            value={v.timeoutSeconds}
-                            onChange={(val) => updateVerification(vIdx, 'timeoutSeconds', val ?? (showPreListen ? 30 : 0))}
-                            min={0}
-                            size="small"
-                            style={{ width: '100%' }}
-                          />
-                        </div>
-                        {!showPreListen && (
-                          <div style={{ width: 110 }}>
-                            <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Query Timeout (s)</div>
-                            <InputNumber
-                              value={v.queryTimeoutSeconds}
-                              onChange={(val) => updateVerification(vIdx, 'queryTimeoutSeconds', val ?? 30)}
-                              min={1}
-                              size="small"
-                              style={{ width: '100%' }}
-                            />
-                          </div>
-                        )}
-                        {showPreListen && (
-                          <div style={{ paddingTop: 22 }}>
-                            <Checkbox
-                              checked={v.preListen}
-                              onChange={(e) => updateVerification(vIdx, 'preListen', e.target.checked)}
-                            >
-                              Pre-Listen
-                            </Checkbox>
-                          </div>
-                        )}
-                        <div style={{ paddingTop: 18 }}>
-                          <Popconfirm title="Remove verification?" onConfirm={() => removeVerification(vIdx)} okType="danger">
-                            <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                          </Popconfirm>
-                        </div>
-                      </div>
-
-                      {/* Query — Kafka gets separate Topic + Key fields, others get generic textarea */}
-                      {connectorType === 'KAFKA' ? (
-                        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Topic</div>
-                            <PlaceholderInput
-                              value={parseKafkaQuery(v.query).topic}
-                              onChange={(val) => updateVerification(vIdx, 'query', buildKafkaQuery(val, parseKafkaQuery(v.query).key))}
-                              envVars={envVarNames}
-                              depSteps={verificationDepStepInfos}
-                              placeholder="e.g. order-events or ${TOPIC_NAME}"
-                              size="small"
-                            />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Key <span style={{ color: '#999' }}>(optional)</span></div>
-                            <PlaceholderInput
-                              value={parseKafkaQuery(v.query).key}
-                              onChange={(val) => updateVerification(vIdx, 'query', buildKafkaQuery(parseKafkaQuery(v.query).topic, val))}
-                              envVars={envVarNames}
-                              depSteps={verificationDepStepInfos}
-                              placeholder="e.g. {{stepName.id}} or ${VAR}"
-                              size="small"
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div style={{ marginBottom: 8 }}>
-                          <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Query</div>
-                          <PlaceholderInput
-                            mode="textarea"
-                            rows={3}
-                            value={v.query}
-                            onChange={(val) => updateVerification(vIdx, 'query', val)}
-                            envVars={envVarNames}
-                            depSteps={verificationDepStepInfos}
-                            placeholder="SQL query, Redis command, etc. Supports ${VAR} and {{stepName.path}}"
-                            size="small"
-                          />
-                        </div>
-                      )}
-
-
-                      {/* Assertions */}
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                          <span style={{ fontSize: 12, color: '#595959' }}>Assertions ({v.assertions.length})</span>
-                          <Button
-                            type="dashed"
-                            size="small"
-                            icon={<PlusOutlined />}
-                            onClick={() => addAssertion(vIdx)}
-                          >
-                            Add Assertion
-                          </Button>
-                        </div>
-                        <Table
-                          columns={[
-                            {
-                              title: 'JSON Path',
-                              dataIndex: 'jsonPath',
-                              width: '35%',
-                              render: (_: string, record: AssertionRow, aIdx: number) => (
-                                <Input
-                                  placeholder="e.g. $.count or $[0].status"
-                                  value={record.jsonPath}
-                                  onChange={(e) => updateAssertion(vIdx, aIdx, 'jsonPath', e.target.value)}
-                                  size="small"
-                                />
-                              ),
-                            },
-                            {
-                              title: 'Operator',
-                              dataIndex: 'operator',
-                              width: '22%',
-                              render: (_: string, record: AssertionRow, aIdx: number) => (
-                                <Select
-                                  value={record.operator}
-                                  onChange={(val) => updateAssertion(vIdx, aIdx, 'operator', val)}
-                                  options={ASSERTION_OPERATOR_OPTIONS}
+            children: (
+              <div>
+                {verifications.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: '#999', padding: 16 }}>
+                    No verifications added
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {verifications.map((v, vIdx) => {
+                      const connectorType = connectorNames.find((c) => c.name === v.connectorName)?.type
+                      const showPreListen = connectorType === 'KAFKA' || connectorType === 'RABBITMQ'
+                      return (
+                        <div
+                          key={v._clientId}
+                          style={{
+                            border: '1px solid #f0f0f0',
+                            borderRadius: 4,
+                            padding: 12,
+                            background: '#fafafa',
+                          }}
+                        >
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Connector</div>
+                              <Select
+                                showSearch
+                                value={v.connectorName || undefined}
+                                onChange={(val) => updateVerification(vIdx, 'connectorName', val)}
+                                placeholder="Select connector"
+                                size="small"
+                                style={{ width: '100%' }}
+                                options={connectorNames.map((c) => ({ label: `${c.name} (${c.type})`, value: c.name }))}
+                                filterOption={(input, option) =>
+                                  (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                                }
+                              />
+                            </div>
+                            <div style={{ width: 90 }}>
+                              <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>
+                                {showPreListen ? 'Timeout (s)' : 'Delay (s)'}
+                              </div>
+                              <InputNumber
+                                value={v.timeoutSeconds}
+                                onChange={(val) => updateVerification(vIdx, 'timeoutSeconds', val ?? (showPreListen ? 30 : 0))}
+                                min={0}
+                                size="small"
+                                style={{ width: '100%' }}
+                              />
+                            </div>
+                            {!showPreListen && (
+                              <div style={{ width: 110 }}>
+                                <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Query Timeout (s)</div>
+                                <InputNumber
+                                  value={v.queryTimeoutSeconds}
+                                  onChange={(val) => updateVerification(vIdx, 'queryTimeoutSeconds', val ?? 30)}
+                                  min={1}
                                   size="small"
                                   style={{ width: '100%' }}
                                 />
-                              ),
-                            },
-                            {
-                              title: 'Expected Value',
-                              dataIndex: 'expectedValue',
-                              width: '33%',
-                              render: (_: string, record: AssertionRow, aIdx: number) => (
+                              </div>
+                            )}
+                            {showPreListen && (
+                              <div style={{ paddingTop: 22 }}>
+                                <Checkbox
+                                  checked={v.preListen}
+                                  onChange={(e) => updateVerification(vIdx, 'preListen', e.target.checked)}
+                                >
+                                  Pre-Listen
+                                </Checkbox>
+                              </div>
+                            )}
+                            <div style={{ paddingTop: 18 }}>
+                              <Popconfirm title="Remove verification?" onConfirm={() => removeVerification(vIdx)} okType="danger">
+                                <Button type="text" danger icon={<DeleteOutlined />} size="small" />
+                              </Popconfirm>
+                            </div>
+                          </div>
+
+                          {connectorType === 'KAFKA' ? (
+                            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Topic</div>
                                 <PlaceholderInput
-                                  placeholder="Expected value"
-                                  value={record.expectedValue}
-                                  onChange={(val) => updateAssertion(vIdx, aIdx, 'expectedValue', val)}
+                                  value={parseKafkaQuery(v.query).topic}
+                                  onChange={(val) => updateVerification(vIdx, 'query', buildKafkaQuery(val, parseKafkaQuery(v.query).key))}
                                   envVars={envVarNames}
                                   depSteps={verificationDepStepInfos}
+                                  placeholder="e.g. order-events or ${TOPIC_NAME}"
                                   size="small"
                                 />
-                              ),
-                            },
-                            {
-                              title: '',
-                              key: 'actions',
-                              width: '8%',
-                              render: (_: unknown, _record: AssertionRow, aIdx: number) => (
-                                <Popconfirm title="Remove?" onConfirm={() => removeAssertion(vIdx, aIdx)} okType="danger">
-                                  <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                                </Popconfirm>
-                              ),
-                            },
-                          ]}
-                          dataSource={v.assertions}
-                          rowKey="_clientId"
-                          pagination={false}
-                          size="small"
-                          locale={{ emptyText: 'No assertions. Click "Add Assertion" to create one.' }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Key <span style={{ color: '#999' }}>(optional)</span></div>
+                                <PlaceholderInput
+                                  value={parseKafkaQuery(v.query).key}
+                                  onChange={(val) => updateVerification(vIdx, 'query', buildKafkaQuery(parseKafkaQuery(v.query).topic, val))}
+                                  envVars={envVarNames}
+                                  depSteps={verificationDepStepInfos}
+                                  placeholder="e.g. {{stepName.id}} or ${VAR}"
+                                  size="small"
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ marginBottom: 8 }}>
+                              <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Query</div>
+                              <PlaceholderInput
+                                mode="textarea"
+                                rows={3}
+                                value={v.query}
+                                onChange={(val) => updateVerification(vIdx, 'query', val)}
+                                envVars={envVarNames}
+                                depSteps={verificationDepStepInfos}
+                                placeholder="SQL query, Redis command, etc. Supports ${VAR} and {{stepName.path}}"
+                                size="small"
+                              />
+                            </div>
+                          )}
+
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                              <span style={{ fontSize: 12, color: '#595959' }}>Assertions ({v.assertions.length})</span>
+                              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addAssertion(vIdx)}>
+                                Add Assertion
+                              </Button>
+                            </div>
+                            <Table
+                              columns={[
+                                {
+                                  title: 'JSON Path',
+                                  dataIndex: 'jsonPath',
+                                  width: '35%',
+                                  render: (_: string, record: AssertionRow, aIdx: number) => (
+                                    <Input
+                                      placeholder="e.g. $.count or $[0].status"
+                                      value={record.jsonPath}
+                                      onChange={(e) => updateAssertion(vIdx, aIdx, 'jsonPath', e.target.value)}
+                                      size="small"
+                                    />
+                                  ),
+                                },
+                                {
+                                  title: 'Operator',
+                                  dataIndex: 'operator',
+                                  width: '22%',
+                                  render: (_: string, record: AssertionRow, aIdx: number) => (
+                                    <Select
+                                      value={record.operator}
+                                      onChange={(val) => updateAssertion(vIdx, aIdx, 'operator', val)}
+                                      options={ASSERTION_OPERATOR_OPTIONS}
+                                      size="small"
+                                      style={{ width: '100%' }}
+                                    />
+                                  ),
+                                },
+                                {
+                                  title: 'Expected Value',
+                                  dataIndex: 'expectedValue',
+                                  width: '33%',
+                                  render: (_: string, record: AssertionRow, aIdx: number) => (
+                                    <PlaceholderInput
+                                      placeholder="Expected value"
+                                      value={record.expectedValue}
+                                      onChange={(val) => updateAssertion(vIdx, aIdx, 'expectedValue', val)}
+                                      envVars={envVarNames}
+                                      depSteps={verificationDepStepInfos}
+                                      size="small"
+                                    />
+                                  ),
+                                },
+                                {
+                                  title: '',
+                                  key: 'actions',
+                                  width: '8%',
+                                  render: (_: unknown, _record: AssertionRow, aIdx: number) => (
+                                    <Popconfirm title="Remove?" onConfirm={() => removeAssertion(vIdx, aIdx)} okType="danger">
+                                      <Button type="text" danger icon={<DeleteOutlined />} size="small" />
+                                    </Popconfirm>
+                                  ),
+                                },
+                              ]}
+                              dataSource={v.assertions}
+                              rowKey="_clientId"
+                              pagination={false}
+                              size="small"
+                              locale={{ emptyText: 'No assertions added' }}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addVerification} style={{ marginTop: 8 }}>
+                  Add Verification
+                </Button>
               </div>
             ),
           },
         ]}
       />
 
-      {/* Save / Cancel buttons */}
-      <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+      {/* ===== SAVE / CANCEL ===== */}
+      <div style={{ padding: '8px 0', display: 'flex', gap: 8, justifyContent: 'flex-end', borderTop: '1px solid #f0f0f0' }}>
         <Button onClick={onCancel}>Cancel</Button>
         <Button type="primary" onClick={handleSave} loading={saving}>
           Save
