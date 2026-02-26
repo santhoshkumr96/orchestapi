@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: orchestapi
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/test}
+    username: ${DB_USERNAME:demographics_user}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      default_schema: orchestrator
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: orchestrator
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  flyway:
+    enabled: true
+    default-schema: orchestrator
+    schemas: orchestrator
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+server:
+  port: ${SERVER_PORT:8080}

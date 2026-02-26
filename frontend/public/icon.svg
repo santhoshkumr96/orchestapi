@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0abfc"/>
+      <stop offset="100%" style="stop-color:#c084fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#g1)"/>
+  <!-- Flow lines -->
+  <line x1="32" y1="14" x2="18" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="32" y1="14" x2="46" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="30" x2="26" y2="46" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="46" y1="30" x2="38" y2="46" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Nodes -->
+  <circle cx="32" cy="14" r="5" fill="url(#g2)"/>
+  <circle cx="32" cy="14" r="2.5" fill="white" opacity="0.9"/>
+  <rect x="12" y="24" width="12" height="12" rx="3" fill="url(#g2)"/>
+  <rect x="40" y="24" width="12" height="12" rx="3" fill="url(#g2)"/>
+  <circle cx="26" cy="46" r="5" fill="url(#g2)"/>
+  <path d="M23 46 L25 48 L29 44" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="38" cy="46" r="5" fill="url(#g2)"/>
+  <path d="M35 46 L37 48 L41 44" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

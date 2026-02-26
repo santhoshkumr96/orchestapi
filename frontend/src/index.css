@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Hide selected value text when typing in a searchable Select */
+.ant-select-show-search.ant-select-focused .ant-select-selection-item {
+  opacity: 0;
+}
+.ant-select-show-search .ant-select-selection-search-input:not(:placeholder-shown) + .ant-select-selection-item {
+  opacity: 0;
+}
