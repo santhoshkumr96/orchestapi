@@ -79,4 +79,8 @@ public class TestStepRequest {
 
     @Builder.Default
     private boolean dependencyOnly = false;
+
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @Builder.Default
+    private List<String> disabledDefaultHeaders = new ArrayList<>();
 }

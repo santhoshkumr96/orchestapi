@@ -29,7 +29,7 @@ import type {
   AssertionDto,
   VerificationDto,
 } from '../types/testSuite'
-import type { ConnectorType } from '../types/environment'
+import type { ConnectorType, HeaderDto } from '../types/environment'
 import { testStepApi } from '../services/testSuiteApi'
 import PlaceholderInput from './PlaceholderInput'
 import type { DepStepInfo } from './PlaceholderInput'
@@ -41,6 +41,7 @@ interface StepEditorProps {
   suiteId: string
   allSteps: TestStep[] // for dependency picker (exclude self)
   envVarNames: string[] // environment variable names for autocomplete
+  envHeaders?: HeaderDto[] // default headers from environment
   connectorNames?: { name: string; type: ConnectorType }[] // available connectors from environment
   fileKeys?: string[] // environment file keys for ${FILE:key} autocomplete
   onSave: () => void // called after successful save to refresh parent
@@ -120,7 +121,7 @@ const ASSERTION_OPERATOR_OPTIONS: { label: string; value: AssertionOperatorType 
 
 // ---- Component ----
 
-export default function StepEditor({ step, suiteId, allSteps, envVarNames, connectorNames = [], fileKeys = [], onSave, onCancel }: StepEditorProps) {
+export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHeaders = [], connectorNames = [], fileKeys = [], onSave, onCancel }: StepEditorProps) {
   const clientIdCounter = useRef(1)
   const genClientId = () => `_new_${clientIdCounter.current++}`
 
@@ -133,8 +134,30 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, conne
 
   // ---- Headers state ----
   const [headers, setHeaders] = useState<KVRow[]>(
-    () => step?.headers.map((h) => ({ ...h, _clientId: genClientId() })) ?? [],
+    () => {
+      const envHeaderKeys = new Set(envHeaders.map((h) => h.headerKey))
+      return (step?.headers ?? [])
+        .filter((h) => !envHeaderKeys.has(h.key)) // exclude overrides from step headers list
+        .map((h) => ({ ...h, _clientId: genClientId() }))
+    },
   )
+  const [disabledDefaultHeaders, setDisabledDefaultHeaders] = useState<Set<string>>(
+    () => new Set(step?.disabledDefaultHeaders ?? []),
+  )
+  // Track overridden default header values: headerKey -> overridden value
+  const [defaultHeaderOverrides, setDefaultHeaderOverrides] = useState<Record<string, string>>(() => {
+    // If step has headers that match env default header keys, treat as overrides
+    const overrides: Record<string, string> = {}
+    if (step?.headers && envHeaders.length > 0) {
+      const envHeaderKeys = new Set(envHeaders.map((h) => h.headerKey))
+      step.headers.forEach((h) => {
+        if (envHeaderKeys.has(h.key)) {
+          overrides[h.key] = h.value
+        }
+      })
+    }
+    return overrides
+  })
 
   // ---- Query Params state ----
   const [queryParams, setQueryParams] = useState<KVRow[]>(
@@ -447,11 +470,17 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, conne
       return
     }
 
+    // Merge step headers + default header overrides
+    const stepHeaders = headers.map(({ _clientId: _, ...rest }) => rest)
+    Object.entries(defaultHeaderOverrides).forEach(([key, value]) => {
+      stepHeaders.push({ key, value })
+    })
+
     const request: TestStepRequest = {
       name: name.trim(),
       method,
       url: url.trim(),
-      headers: headers.map(({ _clientId: _, ...rest }) => rest),
+      headers: stepHeaders,
       bodyType,
       body: bodyType === 'JSON' ? body : bodyType === 'NONE' ? '' : body,
       formDataFields: bodyType === 'FORM_DATA' ? formDataFields.map(({ _clientId: _, ...rest }) => rest) : [],
@@ -459,6 +488,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, conne
       cacheable,
       cacheTtlSeconds: cacheable ? cacheTtlSeconds : 0,
       dependencyOnly,
+      disabledDefaultHeaders: Array.from(disabledDefaultHeaders),
       dependencies: dependencies.map(({ _clientId: _, ...rest }) => rest),
       responseHandlers: responseHandlers.map(({ _clientId: _, ...rest }) => rest),
       extractVariables: extractVariables.map(({ _clientId: _, ...rest }) => rest),
@@ -863,14 +893,88 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, conne
               </Button>
             ),
             children: (
-              <Table
-                columns={kvColumns(updateHeader, removeHeader)}
-                dataSource={headers}
-                rowKey="_clientId"
-                pagination={false}
-                size="small"
-                locale={{ emptyText: 'No headers. Click "Add Header" to create one.' }}
-              />
+              <>
+                {envHeaders.length > 0 && (
+                  <div style={{ marginBottom: headers.length > 0 ? 12 : 0 }}>
+                    <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>Default Headers (from environment)</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                        <tr style={{ background: '#f0f5ff', textAlign: 'left' }}>
+                          <th style={{ padding: '4px 8px', fontWeight: 500, width: 40 }}>On</th>
+                          <th style={{ padding: '4px 8px', fontWeight: 500, width: '30%' }}>Key</th>
+                          <th style={{ padding: '4px 8px', fontWeight: 500, width: '25%' }}>Type</th>
+                          <th style={{ padding: '4px 8px', fontWeight: 500 }}>Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {envHeaders.map((eh) => {
+                          const enabled = !disabledDefaultHeaders.has(eh.headerKey)
+                          const overrideValue = defaultHeaderOverrides[eh.headerKey]
+                          const hasOverride = overrideValue !== undefined
+                          const displayType = eh.valueType === 'ISO_TIMESTAMP' ? 'ISO Timestamp' : eh.valueType === 'VARIABLE' ? 'Variable' : eh.valueType
+                          const displayValue = eh.valueType === 'UUID' || eh.valueType === 'ISO_TIMESTAMP'
+                            ? '(auto-generated)'
+                            : (hasOverride ? overrideValue : eh.headerValue)
+                          const isAutoGen = eh.valueType === 'UUID' || eh.valueType === 'ISO_TIMESTAMP'
+                          return (
+                            <tr key={eh.headerKey} style={{ borderBottom: '1px solid #f0f0f0', opacity: enabled ? 1 : 0.45 }}>
+                              <td style={{ padding: '4px 8px' }}>
+                                <Switch
+                                  size="small"
+                                  checked={enabled}
+                                  onChange={(checked) => {
+                                    const next = new Set(disabledDefaultHeaders)
+                                    if (checked) next.delete(eh.headerKey)
+                                    else next.add(eh.headerKey)
+                                    setDisabledDefaultHeaders(next)
+                                  }}
+                                />
+                              </td>
+                              <td style={{ padding: '4px 8px', fontFamily: 'monospace', fontSize: 12 }}>{eh.headerKey}</td>
+                              <td style={{ padding: '4px 8px', color: '#8c8c8c', fontSize: 12 }}>{displayType}</td>
+                              <td style={{ padding: '4px 8px' }}>
+                                {isAutoGen ? (
+                                  <span style={{ color: '#999', fontStyle: 'italic', fontSize: 12 }}>{displayValue}</span>
+                                ) : (
+                                  <Input
+                                    size="small"
+                                    value={displayValue}
+                                    placeholder={eh.headerValue || 'Value'}
+                                    disabled={!enabled}
+                                    onChange={(e) => {
+                                      const val = e.target.value
+                                      setDefaultHeaderOverrides((prev) => {
+                                        // If value matches original, remove override
+                                        if (val === eh.headerValue) {
+                                          const { [eh.headerKey]: _, ...rest } = prev
+                                          return rest
+                                        }
+                                        return { ...prev, [eh.headerKey]: val }
+                                      })
+                                    }}
+                                    style={hasOverride ? { borderColor: '#faad14' } : undefined}
+                                  />
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                    {headers.length > 0 && (
+                      <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 12, marginBottom: 6 }}>Step-specific Headers</div>
+                    )}
+                  </div>
+                )}
+                <Table
+                  columns={kvColumns(updateHeader, removeHeader)}
+                  dataSource={headers}
+                  rowKey="_clientId"
+                  pagination={false}
+                  size="small"
+                  locale={{ emptyText: envHeaders.length > 0 ? 'No step-specific headers.' : 'No headers. Click "Add Header" to create one.' }}
+                />
+              </>
             ),
           },
           {

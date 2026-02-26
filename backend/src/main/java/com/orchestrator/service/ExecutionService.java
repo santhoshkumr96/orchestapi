@@ -1359,9 +1359,19 @@ public class ExecutionService {
     private HttpHeaders buildHeaders(TestStep step, Environment env, Map<String, String> allExtractedVars, Map<String, String> manualInputValues) {
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        // 1. Apply environment-level headers first
+        // Parse disabled default headers for this step
+        Set<String> disabledHeaders = new HashSet<>();
+        try {
+            List<String> disabled = objectMapper.readValue(
+                    step.getDisabledDefaultHeaders() != null ? step.getDisabledDefaultHeaders() : "[]",
+                    new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+            disabledHeaders.addAll(disabled);
+        } catch (Exception ignored) {}
+
+        // 1. Apply environment-level headers first (skip disabled ones)
         if (env != null && env.getHeaders() != null) {
             for (EnvironmentHeader eh : env.getHeaders()) {
+                if (disabledHeaders.contains(eh.getHeaderKey())) continue;
                 String value = resolveHeaderValue(eh, env, allExtractedVars);
                 value = resolveManualInputs(value, manualInputValues);
                 httpHeaders.add(eh.getHeaderKey(), value);

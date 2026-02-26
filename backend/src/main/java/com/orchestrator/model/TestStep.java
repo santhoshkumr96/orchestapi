@@ -81,6 +81,11 @@ public class TestStep {
     @Builder.Default
     private int cacheTtlSeconds = 0;
 
+    @Column(name = "disabled_default_headers", columnDefinition = "jsonb", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Builder.Default
+    private String disabledDefaultHeaders = "[]";
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 0;

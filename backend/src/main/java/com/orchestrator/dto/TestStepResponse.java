@@ -33,6 +33,7 @@ public class TestStepResponse {
     private boolean cacheable;
     private int cacheTtlSeconds;
     private boolean dependencyOnly;
+    private List<String> disabledDefaultHeaders;
     private int sortOrder;
     private List<StepDependencyDto> dependencies;
     private List<StepResponseHandlerDto> responseHandlers;
@@ -56,6 +57,7 @@ public class TestStepResponse {
                 .cacheable(step.isCacheable())
                 .cacheTtlSeconds(step.getCacheTtlSeconds())
                 .dependencyOnly(step.isDependencyOnly())
+                .disabledDefaultHeaders(parseStringList(step.getDisabledDefaultHeaders()))
                 .sortOrder(step.getSortOrder())
                 .dependencies(mapDependencies(step))
                 .responseHandlers(mapHandlers(step))
@@ -147,6 +149,17 @@ public class TestStepResponse {
             return MAPPER.readValue(json, new TypeReference<List<FormDataFieldDto>>() {});
         } catch (Exception e) {
             return new ArrayList<>();
+        }
+    }
+
+    private static List<String> parseStringList(String json) {
+        if (json == null || json.isBlank() || "[]".equals(json)) {
+            return Collections.emptyList();
+        }
+        try {
+            return MAPPER.readValue(json, new TypeReference<List<String>>() {});
+        } catch (Exception e) {
+            return Collections.emptyList();
         }
     }
 }

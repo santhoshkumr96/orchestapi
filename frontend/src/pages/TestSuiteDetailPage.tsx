@@ -32,7 +32,7 @@ import { testSuiteApi, testStepApi } from '../services/testSuiteApi'
 import type { StepExecutionResult, SuiteExecutionResult } from '../services/testSuiteApi'
 import { environmentApi } from '../services/environmentApi'
 import { scheduleApi } from '../services/scheduleApi'
-import type { ConnectorType } from '../types/environment'
+import type { ConnectorType, HeaderDto } from '../types/environment'
 import StepEditor from '../components/StepEditor'
 import RunResultsPanel from '../components/RunResultsPanel'
 import ImportStepModal from '../components/ImportStepModal'
@@ -85,6 +85,7 @@ export default function TestSuiteDetailPage() {
   const [envVarNames, setEnvVarNames] = useState<string[]>([])
   const [connectorNames, setConnectorNames] = useState<{ name: string; type: ConnectorType }[]>([])
   const [fileKeys, setFileKeys] = useState<string[]>([])
+  const [envHeaders, setEnvHeaders] = useState<HeaderDto[]>([])
 
   // Import state
   const [importModalOpen, setImportModalOpen] = useState(false)
@@ -108,6 +109,7 @@ export default function TestSuiteDetailPage() {
     try {
       const env = await environmentApi.get(envId)
       setEnvVarNames(env.variables.map((v) => v.key))
+      setEnvHeaders(env.headers ?? [])
       setConnectorNames(env.connectors?.map((c) => ({ name: c.name, type: c.type })) ?? [])
       // Load file keys for ${FILE:key} autocomplete
       try {
@@ -591,6 +593,7 @@ export default function TestSuiteDetailPage() {
                         suiteId={id!}
                         allSteps={steps}
                         envVarNames={envVarNames}
+                        envHeaders={envHeaders}
                         connectorNames={connectorNames}
                         fileKeys={fileKeys}
                         onSave={handleStepSave}

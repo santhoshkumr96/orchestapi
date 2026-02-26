@@ -79,6 +79,7 @@ public class TestStepService {
                 .cacheable(request.isCacheable())
                 .cacheTtlSeconds(request.getCacheTtlSeconds())
                 .dependencyOnly(request.isDependencyOnly())
+                .disabledDefaultHeaders(toJson(request.getDisabledDefaultHeaders()))
                 .sortOrder(maxSortOrder + 1)
                 .build();
 
@@ -116,6 +117,7 @@ public class TestStepService {
         step.setCacheable(request.isCacheable());
         step.setCacheTtlSeconds(request.getCacheTtlSeconds());
         step.setDependencyOnly(request.isDependencyOnly());
+        step.setDisabledDefaultHeaders(toJson(request.getDisabledDefaultHeaders()));
 
         // Validate dependencies
         validateDependencies(suiteId, stepId, request.getDependencies());
