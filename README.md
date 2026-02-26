@@ -20,9 +20,13 @@
 |:-:|:-:|
 | ![Dashboard](frontend/public/screenshots/dashboard.png) | ![Test Suites](frontend/public/screenshots/test-suite.png) |
 
-| Suite Steps | Environment Detail |
+| Suite Steps | Step Editor (Tabs) |
 |:-:|:-:|
-| ![Suite Steps](frontend/public/screenshots/step-editor.png) | ![Environment Detail](frontend/public/screenshots/environment-detail.png) |
+| ![Suite Steps](frontend/public/screenshots/step-editor.png) | ![Step Editor](frontend/public/screenshots/testSuite.png) |
+
+| Run Results | Environment Detail |
+|:-:|:-:|
+| ![Run Results](frontend/public/screenshots/runsuite.png) | ![Environment Detail](frontend/public/screenshots/environment-detail.png) |
 
 | Run History | Environments |
 |:-:|:-:|
