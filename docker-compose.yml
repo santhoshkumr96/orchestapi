@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: orchestapi
+      POSTGRES_USER: orchestapi
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orchestapi"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  orchestapi:
+    build: .
+    # Or use the published image:
+    # image: santhoshkumr96/orchestapi:latest
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/orchestapi
+      DB_USERNAME: orchestapi
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      SERVER_PORT: 8080
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

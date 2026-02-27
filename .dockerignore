@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# Build artifacts
+backend/target
+frontend/dist
+frontend/node_modules
+
+# Documentation / non-essential
+docs
+landing
+README.md
+LICENSE
+NOTICE
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Claude
+.claude
+
+# OS
+.DS_Store
+Thumbs.db

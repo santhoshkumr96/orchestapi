@@ -1,27 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1"/>
-      <stop offset="100%" style="stop-color:#8b5cf6"/>
-    </linearGradient>
-    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f0abfc"/>
-      <stop offset="100%" style="stop-color:#c084fc"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0891b2"/>
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#g1)"/>
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
   <!-- Flow lines -->
-  <line x1="32" y1="14" x2="18" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
-  <line x1="32" y1="14" x2="46" y2="30" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
-  <line x1="18" y1="30" x2="26" y2="46" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
-  <line x1="46" y1="30" x2="38" y2="46" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
-  <!-- Nodes -->
-  <circle cx="32" cy="14" r="5" fill="url(#g2)"/>
-  <circle cx="32" cy="14" r="2.5" fill="white" opacity="0.9"/>
-  <rect x="12" y="24" width="12" height="12" rx="3" fill="url(#g2)"/>
-  <rect x="40" y="24" width="12" height="12" rx="3" fill="url(#g2)"/>
-  <circle cx="26" cy="46" r="5" fill="url(#g2)"/>
-  <path d="M23 46 L25 48 L29 44" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="38" cy="46" r="5" fill="url(#g2)"/>
-  <path d="M35 46 L37 48 L41 44" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="32" y1="15" x2="20" y2="30" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="32" y1="15" x2="44" y2="30" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="20" y1="30" x2="32" y2="47" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="44" y1="30" x2="32" y2="47" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round"/>
+  <!-- Top node (play arrow) -->
+  <circle cx="32" cy="14" r="5.5" fill="rgba(255,255,255,0.9)"/>
+  <path d="M30 12 L34 14 L30 16" stroke="#2563eb" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Left node (API) -->
+  <rect x="12" y="23" width="16" height="16" rx="4" fill="rgba(255,255,255,0.9)"/>
+  <text x="20" y="34.5" text-anchor="middle" fill="#2563eb" font-size="7" font-weight="700" font-family="monospace">{}</text>
+  <!-- Right node (API) -->
+  <rect x="36" y="23" width="16" height="16" rx="4" fill="rgba(255,255,255,0.9)"/>
+  <text x="44" y="34.5" text-anchor="middle" fill="#0891b2" font-size="7" font-weight="700" font-family="monospace">{}</text>
+  <!-- Bottom node (checkmark) -->
+  <circle cx="32" cy="48" r="5.5" fill="rgba(255,255,255,0.9)"/>
+  <path d="M29.5 48 L31 49.5 L34.5 46" stroke="#0891b2" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

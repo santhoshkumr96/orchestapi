@@ -1,65 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
-    </linearGradient>
-    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#f0abfc;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#c084fc;stop-opacity:1" />
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0891b2"/>
     </linearGradient>
   </defs>
-
-  <!-- Background circle -->
-  <circle cx="256" cy="256" r="240" fill="url(#grad1)" />
-
-  <!-- Inner glow ring -->
-  <circle cx="256" cy="256" r="200" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
-
-  <!-- Orchestration flow lines (DAG connections) -->
-  <!-- Top node to middle nodes -->
-  <line x1="256" y1="130" x2="170" y2="230" stroke="rgba(255,255,255,0.5)" stroke-width="4" stroke-linecap="round"/>
-  <line x1="256" y1="130" x2="340" y2="230" stroke="rgba(255,255,255,0.5)" stroke-width="4" stroke-linecap="round"/>
-
-  <!-- Middle nodes to bottom node -->
-  <line x1="170" y1="230" x2="220" y2="330" stroke="rgba(255,255,255,0.5)" stroke-width="4" stroke-linecap="round"/>
-  <line x1="340" y1="230" x2="290" y2="330" stroke="rgba(255,255,255,0.5)" stroke-width="4" stroke-linecap="round"/>
-
-  <!-- Cross connection -->
-  <line x1="170" y1="230" x2="290" y2="330" stroke="rgba(255,255,255,0.25)" stroke-width="3" stroke-linecap="round" stroke-dasharray="8,6"/>
-
-  <!-- API arrow paths (flowing data) -->
-  <path d="M 200 160 Q 180 195 175 225" stroke="#c4b5fd" stroke-width="2.5" fill="none" stroke-linecap="round">
-    <animate attributeName="stroke-dashoffset" from="40" to="0" dur="2s" repeatCount="indefinite"/>
-  </path>
-  <path d="M 310 160 Q 330 195 335 225" stroke="#c4b5fd" stroke-width="2.5" fill="none" stroke-linecap="round">
-    <animate attributeName="stroke-dashoffset" from="40" to="0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-  </path>
-
-  <!-- Top node (entry point) -->
-  <circle cx="256" cy="130" r="24" fill="url(#nodeGrad)" />
-  <circle cx="256" cy="130" r="12" fill="white" opacity="0.9"/>
-
-  <!-- Middle left node -->
-  <rect x="146" y="206" width="48" height="48" rx="10" fill="url(#nodeGrad)" />
-  <text x="170" y="237" text-anchor="middle" fill="white" font-size="20" font-weight="bold" font-family="monospace">{}</text>
-
-  <!-- Middle right node -->
-  <rect x="316" y="206" width="48" height="48" rx="10" fill="url(#nodeGrad)" />
-  <text x="340" y="237" text-anchor="middle" fill="white" font-size="20" font-weight="bold" font-family="monospace">{}</text>
-
-  <!-- Bottom left node -->
-  <circle cx="220" cy="330" r="20" fill="url(#nodeGrad)" />
-  <path d="M212 330 L218 336 L230 324" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <!-- Bottom right node -->
-  <circle cx="290" cy="330" r="20" fill="url(#nodeGrad)" />
-  <path d="M282 330 L288 336 L300 324" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-
-  <!-- "O" letter accent at center -->
-  <text x="256" y="420" text-anchor="middle" fill="white" font-size="42" font-weight="800" font-family="system-ui, -apple-system, sans-serif" letter-spacing="3" opacity="0.95">OrchestAPI</text>
+  <!-- Background -->
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg)"/>
+  <!-- Flow lines -->
+  <line x1="256" y1="152" x2="168" y2="264" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="256" y1="152" x2="344" y2="264" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="168" y1="264" x2="256" y2="376" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
+  <line x1="344" y1="264" x2="256" y2="376" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
+  <!-- Top node (play arrow) -->
+  <circle cx="256" cy="148" r="32" fill="rgba(255,255,255,0.9)"/>
+  <path d="M244 136 L268 148 L244 160" stroke="#2563eb" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Left node (API) -->
+  <rect x="128" y="224" width="80" height="80" rx="20" fill="rgba(255,255,255,0.9)"/>
+  <text x="168" y="274" text-anchor="middle" fill="#2563eb" font-size="36" font-weight="700" font-family="monospace">{}</text>
+  <!-- Right node (API) -->
+  <rect x="304" y="224" width="80" height="80" rx="20" fill="rgba(255,255,255,0.9)"/>
+  <text x="344" y="274" text-anchor="middle" fill="#0891b2" font-size="36" font-weight="700" font-family="monospace">{}</text>
+  <!-- Bottom node (checkmark) -->
+  <circle cx="256" cy="380" r="32" fill="rgba(255,255,255,0.9)"/>
+  <path d="M240 380 L252 392 L272 372" stroke="#0891b2" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

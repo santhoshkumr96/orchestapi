@@ -26,3 +26,6 @@ test-app/
 
 # Docs
 docs/
+
+# Landing page (hosted separately)
+landing/
