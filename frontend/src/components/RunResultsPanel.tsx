@@ -135,58 +135,73 @@ const darkCodeBlockStyle: React.CSSProperties = {
   color: '#d4d4d4',
 }
 
-/* ─── Verification Card (unchanged) ─── */
+/* ─── Verification Card ─── */
 
 function VerificationCard({ v }: { v: VerificationResultDto }) {
   const isPassed = v.status === 'PASS'
-  const bgColor = isPassed ? '#f6ffed' : '#fff2f0'
-  const borderColor = isPassed ? '#b7eb8f' : '#ffa39e'
+  const statusColor = isPassed ? '#389e0d' : '#cf1322'
+  const statusBorder = isPassed ? '#b7eb8f' : '#ffa39e'
+  const statusBg = isPassed ? '#f6ffed' : '#fff1f0'
 
   return (
-    <div style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 4, padding: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div style={{ background: '#fff', border: `1px solid ${statusBorder}`, borderLeft: `3px solid ${statusColor}`, borderRadius: 4, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         {isPassed
-          ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 14 }} />
-          : <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 14 }} />}
-        <Tag color="blue" style={{ margin: 0, fontSize: 11, lineHeight: '18px', padding: '0 4px' }}>{v.connectorType}</Tag>
-        <Text strong style={{ fontSize: 13 }}>{v.connectorName}</Text>
-        <Text type="secondary" style={{ fontSize: 12 }}>{formatDuration(v.durationMs)}</Text>
-        <Tag color={isPassed ? 'green' : 'red'} style={{ margin: 0 }}>{v.status}</Tag>
+          ? <CheckCircleOutlined style={{ color: '#389e0d', fontSize: 13 }} />
+          : <CloseCircleOutlined style={{ color: '#cf1322', fontSize: 13 }} />}
+        <span style={{ width: 18, height: 18, borderRadius: 3, background: '#531dab', color: '#fff', fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>V</span>
+        <Tag color="blue" style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>{v.connectorType}</Tag>
+        <Text style={{ fontSize: 11, fontWeight: 500, color: '#262626' }}>{v.connectorName}</Text>
+        <Text type="secondary" style={{ fontSize: 11 }}>{formatDuration(v.durationMs)}</Text>
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 10, fontWeight: 600, color: statusColor, background: statusBg, padding: '1px 6px', borderRadius: 3, border: `1px solid ${statusBorder}`, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{v.status}</span>
       </div>
 
+      {/* Query */}
       <div>
-        <Text type="secondary" style={{ fontSize: 11 }}>Query:</Text>
-        <CopyBtn text={v.query} label="Query" />
-        <pre style={{ margin: '2px 0 0 0', padding: 6, background: 'rgba(0,0,0,0.04)', borderRadius: 3, fontFamily: 'monospace', fontSize: 11, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+          <Text style={{ fontSize: 10, fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Query</Text>
+          <CopyBtn text={v.query} label="Query" />
+        </div>
+        <pre style={{ margin: 0, padding: 6, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 3, fontFamily: 'monospace', fontSize: 11, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
           {v.query}
         </pre>
       </div>
 
+      {/* Error */}
       {v.status !== 'PASS' && v.errorMessage && (
-        <div style={{ color: '#ff4d4f', fontSize: 12 }}>{v.errorMessage}</div>
+        <div style={{ background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: 3, padding: '4px 8px', color: '#cf1322', fontSize: 11 }}>{v.errorMessage}</div>
       )}
 
+      {/* Assertions */}
       {v.assertions && v.assertions.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <Text type="secondary" style={{ fontSize: 11 }}>Assertions:</Text>
-          {v.assertions.map((a, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 12, padding: '2px 0' }}>
-              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{a.jsonPath}</code>
-              <Text type="secondary" style={{ fontSize: 11 }}>{a.operator}</Text>
-              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{a.expected}</code>
-              {a.passed
-                ? <Tag color="green" style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>PASS</Tag>
-                : <Tag color="red" style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>FAIL (actual: {a.actual})</Tag>}
-            </div>
-          ))}
+        <div>
+          <Text style={{ fontSize: 10, fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Assertions</Text>
+          <div style={{ marginTop: 4, background: '#fafafa', borderRadius: 4, border: '1px solid #f0f0f0', overflow: 'hidden' }}>
+            {v.assertions.map((a, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 11, padding: '4px 8px', borderBottom: i < v.assertions.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
+                {a.passed
+                  ? <CheckCircleOutlined style={{ color: '#389e0d', fontSize: 11 }} />
+                  : <CloseCircleOutlined style={{ color: '#cf1322', fontSize: 11 }} />}
+                <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.04)', padding: '1px 4px', borderRadius: 2 }}>{a.jsonPath}</code>
+                <Text type="secondary" style={{ fontSize: 10 }}>{a.operator}</Text>
+                <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.04)', padding: '1px 4px', borderRadius: 2 }}>{a.expected}</code>
+                {!a.passed && (
+                  <Text type="danger" style={{ fontSize: 10 }}>got: {a.actual}</Text>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
+      {/* Raw Result */}
       {v.rawResult && (
-        <details style={{ fontSize: 12 }}>
-          <summary style={{ cursor: 'pointer', color: '#595959', fontSize: 11 }}>Raw Result</summary>
+        <details style={{ fontSize: 11 }}>
+          <summary style={{ cursor: 'pointer', color: '#8c8c8c', fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Raw Result</summary>
           <CopyBtn text={v.rawResult} label="Raw result" />
-          <pre style={{ marginTop: 4, padding: 6, background: 'rgba(0,0,0,0.04)', borderRadius: 3, fontFamily: 'monospace', fontSize: 11, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+          <pre style={{ marginTop: 4, padding: 6, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 3, fontFamily: 'monospace', fontSize: 11, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
             {v.rawResult}
           </pre>
         </details>
@@ -196,101 +211,70 @@ function VerificationCard({ v }: { v: VerificationResultDto }) {
 }
 
 function ResponseValidationCard({ rv }: { rv: ResponseValidationResultDto }) {
-  const bgColor = rv.passed ? '#f6ffed' : '#fff2f0'
-  const borderColor = rv.passed ? '#b7eb8f' : '#ffa39e'
-  const typeLabel = rv.validationType === 'HEADER' ? 'Header' : rv.validationType === 'BODY_EXACT_MATCH' ? 'Body Match' : rv.validationType === 'BODY_FIELD' ? 'Body Field' : 'Data Type'
-  const typeColor = rv.validationType === 'HEADER' ? '#1677ff' : rv.validationType === 'BODY_EXACT_MATCH' ? '#722ed1' : rv.validationType === 'BODY_FIELD' ? '#13c2c2' : '#fa8c16'
+  const passed = rv.passed
+  const typeConfig: Record<string, { label: string; color: string; icon: string }> = {
+    HEADER: { label: 'Header', color: '#0958d9', icon: 'H' },
+    BODY_EXACT_MATCH: { label: 'Body Match', color: '#531dab', icon: 'B' },
+    BODY_FIELD: { label: 'Field', color: '#006d75', icon: 'F' },
+    BODY_DATA_TYPE: { label: 'Type', color: '#ad4e00', icon: 'T' },
+  }
+  const cfg = typeConfig[rv.validationType] || typeConfig.HEADER
+  const statusColor = passed ? '#389e0d' : '#cf1322'
+  const statusBg = passed ? '#f6ffed' : '#fff1f0'
+  const statusBorder = passed ? '#b7eb8f' : '#ffa39e'
+
+  // Build the description line based on type
+  let description = ''
+  if (rv.validationType === 'HEADER') description = `${rv.headerName} ${rv.operator}`
+  else if (rv.validationType === 'BODY_EXACT_MATCH') description = `${(rv.matchMode || 'STRICT').charAt(0) + (rv.matchMode || 'STRICT').slice(1).toLowerCase()} match`
+  else if (rv.validationType === 'BODY_FIELD') description = `${rv.jsonPath} ${rv.operator}`
+  else if (rv.validationType === 'BODY_DATA_TYPE') description = `${rv.jsonPath}`
 
   return (
-    <div style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 4, padding: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+    <div style={{ background: '#fff', border: `1px solid ${statusBorder}`, borderLeft: `3px solid ${statusColor}`, borderRadius: 4, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        {rv.passed
-          ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 14 }} />
-          : <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 14 }} />}
-        <span style={{ background: typeColor, color: '#fff', fontSize: 10, padding: '1px 5px', borderRadius: 3 }}>{typeLabel}</span>
-        <Tag color={rv.passed ? 'green' : 'red'} style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>{rv.passed ? 'PASS' : 'FAIL'}</Tag>
+        {passed
+          ? <CheckCircleOutlined style={{ color: '#389e0d', fontSize: 13 }} />
+          : <CloseCircleOutlined style={{ color: '#cf1322', fontSize: 13 }} />}
+        <span style={{ width: 18, height: 18, borderRadius: 3, background: cfg.color, color: '#fff', fontSize: 10, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{cfg.icon}</span>
+        <Text style={{ fontSize: 11, fontWeight: 500, color: '#262626' }}>{cfg.label}</Text>
+        <code style={{ fontSize: 11, color: '#595959', background: 'rgba(0,0,0,0.04)', padding: '1px 6px', borderRadius: 3 }}>{description}</code>
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 10, fontWeight: 600, color: statusColor, background: statusBg, padding: '1px 6px', borderRadius: 3, border: `1px solid ${statusBorder}`, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{passed ? 'Pass' : 'Fail'}</span>
       </div>
 
-      <div style={{ fontSize: 12 }}>
-        {rv.validationType === 'HEADER' && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <Text type="secondary" style={{ fontSize: 11 }}>Header:</Text>
-              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{rv.headerName}</code>
-              <Text type="secondary" style={{ fontSize: 11 }}>{rv.operator}</Text>
+      {/* Diff block — only shown on failure */}
+      {!passed && (
+        <div style={{ background: '#fafafa', borderRadius: 4, border: '1px solid #f0f0f0', overflow: 'hidden' }}>
+          {/* Expected row */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #f0f0f0' }}>
+            <div style={{ width: 64, padding: '5px 8px', background: '#f6ffed', borderRight: '1px solid #f0f0f0', flexShrink: 0 }}>
+              <Text style={{ fontSize: 10, fontWeight: 600, color: '#389e0d', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected</Text>
             </div>
-            {!rv.passed && (
-              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500, minWidth: 55 }}>Expected:</Text>
-                  <code style={{ fontSize: 11, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.expected || '(empty)'}</code>
-                </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500, minWidth: 55 }}>Actual:</Text>
-                  <code style={{ fontSize: 11, background: '#fff2f0', border: '1px solid #ffa39e', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.actual || '(missing)'}</code>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        {rv.validationType === 'BODY_EXACT_MATCH' && (
-          <div>
-            <Text type="secondary" style={{ fontSize: 11 }}>{(rv.matchMode || 'STRICT').charAt(0) + (rv.matchMode || 'STRICT').slice(1).toLowerCase()} body match: </Text>
-            <Text style={{ fontSize: 11 }}>{rv.message}</Text>
-            {!rv.passed && rv.expected && (
-              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div>
-                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500 }}>Expected:</Text>
-                  <pre style={{ fontSize: 10, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '4px 8px', borderRadius: 3, margin: '2px 0 0', maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{rv.expected}</pre>
-                </div>
-                <div>
-                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500 }}>Actual:</Text>
-                  <pre style={{ fontSize: 10, background: '#fff2f0', border: '1px solid #ffa39e', padding: '4px 8px', borderRadius: 3, margin: '2px 0 0', maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{rv.actual || '(empty)'}</pre>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        {rv.validationType === 'BODY_FIELD' && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{rv.jsonPath}</code>
-              <Text type="secondary" style={{ fontSize: 11 }}>{rv.operator}</Text>
+            <div style={{ flex: 1, padding: '4px 8px', minWidth: 0 }}>
+              {rv.validationType === 'BODY_EXACT_MATCH' ? (
+                <pre style={{ fontSize: 11, fontFamily: 'monospace', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 120, overflow: 'auto', color: '#262626' }}>{rv.expected || '(empty)'}</pre>
+              ) : (
+                <code style={{ fontSize: 11, wordBreak: 'break-all', color: '#262626' }}>{rv.validationType === 'BODY_DATA_TYPE' ? rv.expectedType : (rv.expected || '(empty)')}</code>
+              )}
             </div>
-            {!rv.passed && (
-              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500, minWidth: 55 }}>Expected:</Text>
-                  <code style={{ fontSize: 11, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.expected || '(empty)'}</code>
-                </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500, minWidth: 55 }}>Actual:</Text>
-                  <code style={{ fontSize: 11, background: '#fff2f0', border: '1px solid #ffa39e', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.actual || '(missing)'}</code>
-                </div>
-              </div>
-            )}
           </div>
-        )}
-        {rv.validationType === 'BODY_DATA_TYPE' && (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{rv.jsonPath}</code>
+          {/* Actual row */}
+          <div style={{ display: 'flex' }}>
+            <div style={{ width: 64, padding: '5px 8px', background: '#fff1f0', borderRight: '1px solid #f0f0f0', flexShrink: 0 }}>
+              <Text style={{ fontSize: 10, fontWeight: 600, color: '#cf1322', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Actual</Text>
             </div>
-            {!rv.passed && (
-              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500, minWidth: 55 }}>Expected:</Text>
-                  <code style={{ fontSize: 11, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '2px 6px', borderRadius: 3 }}>{rv.expectedType}</code>
-                </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500, minWidth: 55 }}>Actual:</Text>
-                  <code style={{ fontSize: 11, background: '#fff2f0', border: '1px solid #ffa39e', padding: '2px 6px', borderRadius: 3 }}>{rv.actualType || 'unknown'}</code>
-                </div>
-              </div>
-            )}
+            <div style={{ flex: 1, padding: '4px 8px', minWidth: 0 }}>
+              {rv.validationType === 'BODY_EXACT_MATCH' ? (
+                <pre style={{ fontSize: 11, fontFamily: 'monospace', margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 120, overflow: 'auto', color: '#262626' }}>{rv.actual || '(empty)'}</pre>
+              ) : (
+                <code style={{ fontSize: 11, wordBreak: 'break-all', color: '#262626' }}>{rv.validationType === 'BODY_DATA_TYPE' ? (rv.actualType || 'unknown') : (rv.actual || '(missing)')}</code>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -803,11 +787,12 @@ export default function RunResultsPanel({ result, allSteps, targetStepId, onClos
                   height: 10,
                   borderRadius: '50%',
                   background:
-                    step.status === 'SUCCESS' ? '#52c41a'
-                    : step.status === 'ERROR' ? '#ff4d4f'
-                    : step.status === 'VERIFICATION_FAILED' ? '#722ed1'
-                    : step.status === 'SKIPPED' ? '#d9d9d9'
-                    : '#fa8c16',
+                    step.status === 'SUCCESS' ? '#389e0d'
+                    : step.status === 'ERROR' || step.status === 'FAILURE' ? '#cf1322'
+                    : step.status === 'VERIFICATION_FAILED' ? '#531dab'
+                    : step.status === 'VALIDATION_FAILED' ? '#006d75'
+                    : step.status === 'SKIPPED' ? '#bfbfbf'
+                    : '#d48806',
                   flexShrink: 0,
                 }}
               />

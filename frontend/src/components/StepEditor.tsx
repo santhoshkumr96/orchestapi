@@ -935,15 +935,15 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
           <Space size={16}>
             <Space size={4}>
               <Switch size="small" checked={dependencyOnly} onChange={setDependencyOnly} />
-              <span style={{ color: '#595959', fontSize: 12 }}>Dependency only</span>
+              <span style={{ color: '#8c8c8c', fontSize: 11 }}>Dependency only</span>
             </Space>
             <Space size={4}>
               <Switch size="small" checked={cacheable} onChange={(checked) => setCacheable(checked)} />
-              <span style={{ color: '#595959', fontSize: 12 }}>Cacheable</span>
+              <span style={{ color: '#8c8c8c', fontSize: 11 }}>Cacheable</span>
             </Space>
             {cacheable && (
               <Space size={4}>
-                <span style={{ color: '#595959', fontSize: 12 }}>TTL:</span>
+                <span style={{ color: '#8c8c8c', fontSize: 11 }}>TTL:</span>
                 <InputNumber
                   value={cacheTtlSeconds}
                   onChange={(val) => setCacheTtlSeconds(val ?? 0)}
@@ -971,7 +971,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
               <span>
                 Headers
                 {totalHeaders > 0 && (
-                  <Badge count={totalHeaders} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                  <Badge count={totalHeaders} size="small" style={{ marginLeft: 6, backgroundColor: '#597ef7' }} />
                 )}
               </span>
             ),
@@ -979,14 +979,14 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
               <div>
                 {envHeaders.length > 0 && (
                   <div style={{ marginBottom: headers.length > 0 ? 12 : 0 }}>
-                    <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>Default Headers (from environment)</div>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Default Headers (from environment)</div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: '1px solid #f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
                       <thead>
-                        <tr style={{ background: '#f0f5ff', textAlign: 'left' }}>
-                          <th style={{ padding: '4px 8px', fontWeight: 500, width: 40 }}>On</th>
-                          <th style={{ padding: '4px 8px', fontWeight: 500, width: '30%' }}>Key</th>
-                          <th style={{ padding: '4px 8px', fontWeight: 500, width: '25%' }}>Type</th>
-                          <th style={{ padding: '4px 8px', fontWeight: 500 }}>Value</th>
+                        <tr style={{ background: '#fafafa', textAlign: 'left' }}>
+                          <th style={{ padding: '5px 8px', fontWeight: 500, width: 40, fontSize: 11, color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '0.3px', borderBottom: '1px solid #f0f0f0' }}>On</th>
+                          <th style={{ padding: '5px 8px', fontWeight: 500, width: '30%', fontSize: 11, color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '0.3px', borderBottom: '1px solid #f0f0f0' }}>Key</th>
+                          <th style={{ padding: '5px 8px', fontWeight: 500, width: '25%', fontSize: 11, color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '0.3px', borderBottom: '1px solid #f0f0f0' }}>Type</th>
+                          <th style={{ padding: '5px 8px', fontWeight: 500, fontSize: 11, color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '0.3px', borderBottom: '1px solid #f0f0f0' }}>Value</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1044,7 +1044,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                       </tbody>
                     </table>
                     {headers.length > 0 && (
-                      <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 12, marginBottom: 6 }}>Step-specific Headers</div>
+                      <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 12, marginBottom: 6, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Step-specific Headers</div>
                     )}
                   </div>
                 )}
@@ -1068,7 +1068,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
               <span>
                 Params
                 {totalParams > 0 && (
-                  <Badge count={totalParams} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                  <Badge count={totalParams} size="small" style={{ marginLeft: 6, backgroundColor: '#597ef7' }} />
                 )}
               </span>
             ),
@@ -1208,7 +1208,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
               <span>
                 Dependencies
                 {dependencies.length > 0 && (
-                  <Badge count={dependencies.length} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                  <Badge count={dependencies.length} size="small" style={{ marginLeft: 6, backgroundColor: '#73d13d' }} />
                 )}
               </span>
             ),
@@ -1234,7 +1234,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
               <span>
                 Handlers
                 {responseHandlers.length > 0 && (
-                  <Badge count={responseHandlers.length} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                  <Badge count={responseHandlers.length} size="small" style={{ marginLeft: 6, backgroundColor: '#ffc53d' }} />
                 )}
               </span>
             ),
@@ -1260,7 +1260,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
               <span>
                 Variables
                 {extractVariables.length > 0 && (
-                  <Badge count={extractVariables.length} size="small" style={{ marginLeft: 6, backgroundColor: '#8c8c8c' }} />
+                  <Badge count={extractVariables.length} size="small" style={{ marginLeft: 6, backgroundColor: '#ff7a45' }} />
                 )}
               </span>
             ),
@@ -1293,75 +1293,92 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
             children: (
               <div>
                 {responseValidations.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: '#999', padding: 16, fontSize: 12 }}>No response validation rules added</div>
+                  <div style={{ textAlign: 'center', color: '#8c8c8c', padding: '20px 16px', fontSize: 12, background: '#fafafa', borderRadius: 4, border: '1px dashed #d9d9d9' }}>
+                    No response validations configured. Add rules to validate HTTP response headers, body structure, field values, or data types.
+                  </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {responseValidations.map((rv, rvIdx) => {
-                      const typeLabel = rv.validationType === 'HEADER' ? 'Header' : rv.validationType === 'BODY_EXACT_MATCH' ? 'Body Match' : rv.validationType === 'BODY_FIELD' ? 'Body Field' : 'Data Type'
-                      const typeColor = rv.validationType === 'HEADER' ? '#1677ff' : rv.validationType === 'BODY_EXACT_MATCH' ? '#722ed1' : rv.validationType === 'BODY_FIELD' ? '#13c2c2' : '#fa8c16'
+                      const typeConfig: Record<string, { label: string; color: string; bg: string; border: string; icon: string }> = {
+                        HEADER: { label: 'Header', color: '#0958d9', bg: '#e6f4ff', border: '#91caff', icon: 'H' },
+                        BODY_EXACT_MATCH: { label: 'Body Match', color: '#531dab', bg: '#f9f0ff', border: '#d3adf7', icon: 'B' },
+                        BODY_FIELD: { label: 'Field', color: '#006d75', bg: '#e6fffb', border: '#87e8de', icon: 'F' },
+                        BODY_DATA_TYPE: { label: 'Type', color: '#ad4e00', bg: '#fff7e6', border: '#ffd591', icon: 'T' },
+                      }
+                      const cfg = typeConfig[rv.validationType] || typeConfig.HEADER
                       return (
-                        <div key={rv._clientId} style={{ border: '1px solid #f0f0f0', borderRadius: 4, padding: 10, background: '#fafafa' }}>
+                        <div key={rv._clientId} style={{ border: `1px solid ${cfg.border}`, borderLeft: `3px solid ${cfg.color}`, borderRadius: 4, padding: '8px 10px', background: '#fff' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <span style={{ background: typeColor, color: '#fff', fontSize: 11, padding: '1px 6px', borderRadius: 3 }}>{typeLabel}</span>
+                            <span style={{ width: 20, height: 20, borderRadius: 3, background: cfg.color, color: '#fff', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{cfg.icon}</span>
+                            <span style={{ fontSize: 12, fontWeight: 500, color: cfg.color }}>{cfg.label}</span>
                             <div style={{ flex: 1 }} />
                             <Popconfirm title="Remove this validation?" onConfirm={() => removeResponseValidation(rvIdx)} okText="Yes" cancelText="No">
-                              <Button type="text" danger size="small" icon={<DeleteOutlined />} />
+                              <Button type="text" danger size="small" icon={<DeleteOutlined />} style={{ opacity: 0.6 }} />
                             </Popconfirm>
                           </div>
 
                           {rv.validationType === 'HEADER' && (
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                               <div style={{ flex: 1, minWidth: 120 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Header Name</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Header Name</div>
                                 <Input size="small" value={rv.headerName ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'headerName', e.target.value)} placeholder="Content-Type" />
                               </div>
                               <div style={{ width: 130 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Operator</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Operator</div>
                                 <Select size="small" style={{ width: '100%' }} value={rv.operator ?? 'EQUALS'} onChange={(v) => updateResponseValidation(rvIdx, 'operator', v)} options={ASSERTION_OPERATOR_OPTIONS} />
                               </div>
                               <div style={{ flex: 1, minWidth: 120 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Value</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Value</div>
                                 <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="application/json" envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
                               </div>
                             </div>
                           )}
 
                           {rv.validationType === 'BODY_EXACT_MATCH' && (
-                            <div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                                <span style={{ fontSize: 11, color: '#595959' }}>Match Mode:</span>
-                                <Select size="small" style={{ width: 140 }} value={rv.matchMode ?? 'STRICT'} onChange={(v) => updateResponseValidation(rvIdx, 'matchMode', v)} options={[{ value: 'STRICT', label: 'Strict' }, { value: 'FLEXIBLE', label: 'Flexible' }, { value: 'STRUCTURE', label: 'Structure' }]} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Match Mode</div>
+                                <Select size="small" style={{ width: 130 }} value={rv.matchMode ?? 'STRICT'} onChange={(v) => updateResponseValidation(rvIdx, 'matchMode', v)} options={[
+                                  { value: 'STRICT', label: 'Strict' },
+                                  { value: 'FLEXIBLE', label: 'Flexible' },
+                                  { value: 'STRUCTURE', label: 'Structure' },
+                                ]} />
+                                <span style={{ fontSize: 10, color: '#bfbfbf' }}>
+                                  {(rv.matchMode ?? 'STRICT') === 'STRICT' ? 'Exact keys, values & order' : (rv.matchMode ?? 'STRICT') === 'FLEXIBLE' ? 'Subset match, any order' : 'Keys & structure only'}
+                                </span>
                               </div>
-                              <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Body (JSON)</div>
-                              <PlaceholderInput mode="textarea" rows={4} size="small" value={rv.expectedBody ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedBody', v)} placeholder='{"key": "value"}' envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                              <div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Body (JSON)</div>
+                                <PlaceholderInput mode="textarea" rows={4} size="small" value={rv.expectedBody ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedBody', v)} placeholder='{"key": "value"}' envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                              </div>
                             </div>
                           )}
 
                           {rv.validationType === 'BODY_FIELD' && (
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                               <div style={{ flex: 1, minWidth: 120 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>JSON Path</div>
-                                <Input size="small" value={rv.jsonPath ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'jsonPath', e.target.value)} placeholder="$.data.id" />
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>JSON Path</div>
+                                <Input size="small" value={rv.jsonPath ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'jsonPath', e.target.value)} placeholder="$.data.id" style={{ fontFamily: 'monospace' }} />
                               </div>
                               <div style={{ width: 130 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Operator</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Operator</div>
                                 <Select size="small" style={{ width: '100%' }} value={rv.operator ?? 'EQUALS'} onChange={(v) => updateResponseValidation(rvIdx, 'operator', v)} options={ASSERTION_OPERATOR_OPTIONS} />
                               </div>
                               <div style={{ flex: 1, minWidth: 120 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Value</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Value</div>
                                 <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="expected" envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
                               </div>
                             </div>
                           )}
 
                           {rv.validationType === 'BODY_DATA_TYPE' && (
-                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                               <div style={{ flex: 1, minWidth: 150 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>JSON Path</div>
-                                <Input size="small" value={rv.jsonPath ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'jsonPath', e.target.value)} placeholder="$.data.count" />
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>JSON Path</div>
+                                <Input size="small" value={rv.jsonPath ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'jsonPath', e.target.value)} placeholder="$.data.count" style={{ fontFamily: 'monospace' }} />
                               </div>
-                              <div style={{ width: 130 }}>
-                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Type</div>
+                              <div style={{ width: 140 }}>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Type</div>
                                 <Select size="small" style={{ width: '100%' }} value={rv.expectedType ?? 'STRING'} onChange={(v) => updateResponseValidation(rvIdx, 'expectedType', v)} options={DATA_TYPE_OPTIONS} />
                               </div>
                             </div>
@@ -1371,11 +1388,11 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                     })}
                   </div>
                 )}
-                <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('HEADER')}>Header Check</Button>
-                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_EXACT_MATCH')}>Body Match</Button>
-                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_FIELD')}>Field Check</Button>
-                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_DATA_TYPE')}>Type Check</Button>
+                <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <Button size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('HEADER')} style={{ borderColor: '#91caff', color: '#0958d9' }}>Header</Button>
+                  <Button size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_EXACT_MATCH')} style={{ borderColor: '#d3adf7', color: '#531dab' }}>Body Match</Button>
+                  <Button size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_FIELD')} style={{ borderColor: '#87e8de', color: '#006d75' }}>Field</Button>
+                  <Button size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_DATA_TYPE')} style={{ borderColor: '#ffd591', color: '#ad4e00' }}>Type</Button>
                 </div>
               </div>
             ),
@@ -1393,11 +1410,11 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
             children: (
               <div>
                 {verifications.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: '#999', padding: 16 }}>
-                    No verifications added
+                  <div style={{ textAlign: 'center', color: '#8c8c8c', padding: '20px 16px', fontSize: 12, background: '#fafafa', borderRadius: 4, border: '1px dashed #d9d9d9' }}>
+                    No infrastructure verifications configured. Add rules to verify database state, message queues, or cache after API execution.
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {verifications.map((v, vIdx) => {
                       const connectorType = connectorNames.find((c) => c.name === v.connectorName)?.type
                       const showPreListen = connectorType === 'KAFKA' || connectorType === 'RABBITMQ'
@@ -1405,15 +1422,16 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                         <div
                           key={v._clientId}
                           style={{
-                            border: '1px solid #f0f0f0',
+                            border: '1px solid #d3adf7',
+                            borderLeft: '3px solid #531dab',
                             borderRadius: 4,
-                            padding: 12,
-                            background: '#fafafa',
+                            padding: '8px 10px',
+                            background: '#fff',
                           }}
                         >
                           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Connector</div>
+                              <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Connector</div>
                               <Select
                                 showSearch
                                 value={v.connectorName || undefined}
@@ -1428,7 +1446,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                               />
                             </div>
                             <div style={{ width: 90 }}>
-                              <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>
+                              <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                                 {showPreListen ? 'Timeout (s)' : 'Delay (s)'}
                               </div>
                               <InputNumber
@@ -1441,7 +1459,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                             </div>
                             {!showPreListen && (
                               <div style={{ width: 110 }}>
-                                <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Query Timeout (s)</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Query Timeout (s)</div>
                                 <InputNumber
                                   value={v.queryTimeoutSeconds}
                                   onChange={(val) => updateVerification(vIdx, 'queryTimeoutSeconds', val ?? 30)}
@@ -1463,7 +1481,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                             )}
                             <div style={{ paddingTop: 18 }}>
                               <Popconfirm title="Remove verification?" onConfirm={() => removeVerification(vIdx)} okType="danger">
-                                <Button type="text" danger icon={<DeleteOutlined />} size="small" />
+                                <Button type="text" danger icon={<DeleteOutlined />} size="small" style={{ opacity: 0.6 }} />
                               </Popconfirm>
                             </div>
                           </div>
@@ -1471,7 +1489,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                           {connectorType === 'KAFKA' ? (
                             <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Topic</div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Topic</div>
                                 <PlaceholderInput
                                   value={parseKafkaQuery(v.query).topic}
                                   onChange={(val) => updateVerification(vIdx, 'query', buildKafkaQuery(val, parseKafkaQuery(v.query).key))}
@@ -1482,7 +1500,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                                 />
                               </div>
                               <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Key <span style={{ color: '#999' }}>(optional)</span></div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Key <span style={{ fontWeight: 400, textTransform: 'none' }}>(optional)</span></div>
                                 <PlaceholderInput
                                   value={parseKafkaQuery(v.query).key}
                                   onChange={(val) => updateVerification(vIdx, 'query', buildKafkaQuery(parseKafkaQuery(v.query).topic, val))}
@@ -1495,7 +1513,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                             </div>
                           ) : (
                             <div style={{ marginBottom: 8 }}>
-                              <div style={{ fontSize: 12, color: '#595959', marginBottom: 4 }}>Query</div>
+                              <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Query</div>
                               <PlaceholderInput
                                 mode="textarea"
                                 rows={3}
@@ -1511,8 +1529,8 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
 
                           <div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                              <span style={{ fontSize: 12, color: '#595959' }}>Assertions ({v.assertions.length})</span>
-                              <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addAssertion(vIdx)}>
+                              <span style={{ fontSize: 11, color: '#8c8c8c', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Assertions ({v.assertions.length})</span>
+                              <Button size="small" icon={<PlusOutlined />} onClick={() => addAssertion(vIdx)} style={{ borderColor: '#d3adf7', color: '#531dab' }}>
                                 Add Assertion
                               </Button>
                             </div>
@@ -1583,7 +1601,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                     })}
                   </div>
                 )}
-                <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addVerification} style={{ marginTop: 8 }}>
+                <Button size="small" icon={<PlusOutlined />} onClick={addVerification} style={{ marginTop: 10, borderColor: '#d3adf7', color: '#531dab' }}>
                   Add Verification
                 </Button>
               </div>
