@@ -26,6 +26,12 @@ public interface TestStepRepository extends JpaRepository<TestStep, UUID> {
     @Query("SELECT DISTINCT s FROM TestStep s LEFT JOIN FETCH s.verifications v LEFT JOIN FETCH v.assertions WHERE s.suite.id = :suiteId")
     List<TestStep> findBySuiteIdWithVerifications(@Param("suiteId") UUID suiteId);
 
+    @Query("SELECT s FROM TestStep s LEFT JOIN FETCH s.responseValidations WHERE s.id = :id")
+    Optional<TestStep> findByIdWithResponseValidations(@Param("id") UUID id);
+
+    @Query("SELECT DISTINCT s FROM TestStep s LEFT JOIN FETCH s.responseValidations WHERE s.suite.id = :suiteId")
+    List<TestStep> findBySuiteIdWithResponseValidations(@Param("suiteId") UUID suiteId);
+
     boolean existsByNameAndSuiteId(String name, UUID suiteId);
 
     boolean existsByNameAndSuiteIdAndIdNot(String name, UUID suiteId, UUID id);

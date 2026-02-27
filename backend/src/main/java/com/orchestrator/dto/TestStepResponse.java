@@ -40,6 +40,7 @@ public class TestStepResponse {
     private List<StepResponseHandlerDto> responseHandlers;
     private List<StepExtractVariableDto> extractVariables;
     private List<VerificationDto> verifications;
+    private List<ResponseValidationDto> responseValidations;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -65,6 +66,7 @@ public class TestStepResponse {
                 .responseHandlers(mapHandlers(step))
                 .extractVariables(mapExtractVars(step))
                 .verifications(mapVerifications(step))
+                .responseValidations(mapResponseValidations(step))
                 .createdAt(step.getCreatedAt())
                 .updatedAt(step.getUpdatedAt())
                 .build();
@@ -139,6 +141,23 @@ public class TestStepResponse {
                                                 .expectedValue(a.getExpectedValue())
                                                 .build())
                                         .toList())
+                        .build())
+                .toList();
+    }
+
+    private static List<ResponseValidationDto> mapResponseValidations(TestStep step) {
+        if (step.getResponseValidations() == null) return Collections.emptyList();
+        return step.getResponseValidations().stream()
+                .map(rv -> ResponseValidationDto.builder()
+                        .id(rv.getId())
+                        .validationType(rv.getValidationType())
+                        .headerName(rv.getHeaderName())
+                        .jsonPath(rv.getJsonPath())
+                        .operator(rv.getOperator())
+                        .expectedValue(rv.getExpectedValue())
+                        .expectedBody(rv.getExpectedBody())
+                        .matchMode(rv.getMatchMode())
+                        .expectedType(rv.getExpectedType())
                         .build())
                 .toList();
     }

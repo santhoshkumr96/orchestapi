@@ -25,6 +25,8 @@ public class StepExecutionResult {
     private Map<String, String> extractedVariables; // variables extracted from this step
     @Builder.Default
     private List<VerificationResultDto> verificationResults = new ArrayList<>();
+    @Builder.Default
+    private List<ResponseValidationResultDto> responseValidationResults = new ArrayList<>();
 
     // Request details (resolved placeholders)
     private String requestUrl;

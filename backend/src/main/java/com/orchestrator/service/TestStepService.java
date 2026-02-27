@@ -31,6 +31,7 @@ public class TestStepService {
 
         List<TestStep> steps = stepRepository.findBySuiteIdWithDetails(suiteId);
         stepRepository.findBySuiteIdWithVerifications(suiteId); // populates L1 cache for verifications
+        stepRepository.findBySuiteIdWithResponseValidations(suiteId); // populates L1 cache for response validations
 
         return steps.stream()
                 .map(TestStepResponse::from)
@@ -42,6 +43,7 @@ public class TestStepService {
         TestStep step = stepRepository.findByIdWithDetails(stepId)
                 .orElseThrow(() -> new NotFoundException("Test step not found: " + stepId));
         stepRepository.findByIdWithVerifications(stepId); // populates L1 cache for verifications
+        stepRepository.findByIdWithResponseValidations(stepId); // populates L1 cache for response validations
 
         if (!step.getSuite().getId().equals(suiteId)) {
             throw new NotFoundException("Test step " + stepId + " does not belong to suite " + suiteId);
@@ -98,6 +100,7 @@ public class TestStepService {
         TestStep step = stepRepository.findByIdWithDetails(stepId)
                 .orElseThrow(() -> new NotFoundException("Test step not found: " + stepId));
         stepRepository.findByIdWithVerifications(stepId); // load verifications into L1 cache
+        stepRepository.findByIdWithResponseValidations(stepId); // load response validations into L1 cache
 
         if (!step.getSuite().getId().equals(suiteId)) {
             throw new NotFoundException("Test step " + stepId + " does not belong to suite " + suiteId);
@@ -130,6 +133,7 @@ public class TestStepService {
         step.getResponseHandlers().clear();
         step.getExtractVariables().clear();
         step.getVerifications().clear();
+        step.getResponseValidations().clear();
         stepRepository.saveAndFlush(step);
         applySubEntities(step, request);
 
@@ -340,6 +344,26 @@ public class TestStepService {
                 }
 
                 step.getVerifications().add(verification);
+            }
+        }
+
+        // Apply response validations
+        if (request.getResponseValidations() != null) {
+            AtomicInteger rvOrder = new AtomicInteger(0);
+            for (ResponseValidationDto rvDto : request.getResponseValidations()) {
+                StepResponseValidation rv = StepResponseValidation.builder()
+                        .step(step)
+                        .validationType(rvDto.getValidationType())
+                        .headerName(rvDto.getHeaderName())
+                        .jsonPath(rvDto.getJsonPath())
+                        .operator(rvDto.getOperator())
+                        .expectedValue(rvDto.getExpectedValue())
+                        .expectedBody(rvDto.getExpectedBody())
+                        .matchMode(rvDto.getMatchMode() != null ? rvDto.getMatchMode() : "STRICT")
+                        .expectedType(rvDto.getExpectedType())
+                        .sortOrder(rvOrder.getAndIncrement())
+                        .build();
+                step.getResponseValidations().add(rv);
             }
         }
     }

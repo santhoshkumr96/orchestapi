@@ -309,6 +309,16 @@ export default function TestSuiteDetailPage() {
             expectedValue: a.expectedValue,
           })),
         })),
+        responseValidations: (step.responseValidations ?? []).map(rv => ({
+          validationType: rv.validationType,
+          headerName: rv.headerName,
+          jsonPath: rv.jsonPath,
+          operator: rv.operator,
+          expectedValue: rv.expectedValue,
+          expectedBody: rv.expectedBody,
+          matchMode: rv.matchMode,
+          expectedType: rv.expectedType,
+        })),
       }
       await testStepApi.create(id!, request)
       message.success('Step duplicated')

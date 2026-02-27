@@ -30,6 +30,21 @@ export interface VerificationDto {
   assertions: AssertionDto[]
 }
 
+export type ResponseValidationType = 'HEADER' | 'BODY_EXACT_MATCH' | 'BODY_FIELD' | 'BODY_DATA_TYPE'
+export type ExpectedDataType = 'STRING' | 'NUMBER' | 'BOOLEAN' | 'ARRAY' | 'OBJECT' | 'NULL'
+
+export interface ResponseValidationDto {
+  id?: string
+  validationType: ResponseValidationType
+  headerName?: string
+  jsonPath?: string
+  operator?: AssertionOperatorType
+  expectedValue?: string
+  expectedBody?: string
+  matchMode?: 'STRICT' | 'FLEXIBLE' | 'STRUCTURE'
+  expectedType?: ExpectedDataType
+}
+
 export interface KeyValuePair {
   key: string
   value: string
@@ -81,6 +96,7 @@ export interface TestStep {
   responseHandlers: StepResponseHandlerDto[]
   extractVariables: StepExtractVariableDto[]
   verifications: VerificationDto[]
+  responseValidations: ResponseValidationDto[]
   createdAt: string
   updatedAt: string
 }
@@ -103,6 +119,7 @@ export interface TestStepRequest {
   responseHandlers: StepResponseHandlerDto[]
   extractVariables: StepExtractVariableDto[]
   verifications: VerificationDto[]
+  responseValidations: ResponseValidationDto[]
 }
 
 export interface TestSuite {

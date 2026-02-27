@@ -60,6 +60,11 @@ public class TestStepRequest {
     @Builder.Default
     private List<VerificationDto> verifications = new ArrayList<>();
 
+    @Valid
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @Builder.Default
+    private List<ResponseValidationDto> responseValidations = new ArrayList<>();
+
     @Builder.Default
     private String bodyType = "NONE";
 

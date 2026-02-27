@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Badge, Button, Card, Collapse, Descriptions, Spin, Tabs, Tag, Typography, message } from 'antd'
 import { CheckCircleOutlined, CloseCircleOutlined, CloseOutlined, CopyOutlined, LoadingOutlined, WarningOutlined } from '@ant-design/icons'
-import type { SuiteExecutionResult, StepExecutionResult, VerificationResultDto } from '../services/testSuiteApi'
+import type { SuiteExecutionResult, StepExecutionResult, VerificationResultDto, ResponseValidationResultDto } from '../services/testSuiteApi'
 import type { TestStep } from '../types/testSuite'
 
 const { Text, Title } = Typography
@@ -21,6 +21,7 @@ const STATUS_COLOR: Record<string, string> = {
   SKIPPED: 'default',
   RETRIED: 'orange',
   VERIFICATION_FAILED: 'purple',
+  VALIDATION_FAILED: 'cyan',
 }
 
 const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
@@ -28,6 +29,7 @@ const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> 
   PARTIAL_FAILURE: 'warning',
   FAILURE: 'error',
   VERIFICATION_FAILED: 'warning',
+  VALIDATION_FAILED: 'warning',
 }
 
 const METHOD_COLOR: Record<string, string> = {
@@ -193,6 +195,106 @@ function VerificationCard({ v }: { v: VerificationResultDto }) {
   )
 }
 
+function ResponseValidationCard({ rv }: { rv: ResponseValidationResultDto }) {
+  const bgColor = rv.passed ? '#f6ffed' : '#fff2f0'
+  const borderColor = rv.passed ? '#b7eb8f' : '#ffa39e'
+  const typeLabel = rv.validationType === 'HEADER' ? 'Header' : rv.validationType === 'BODY_EXACT_MATCH' ? 'Body Match' : rv.validationType === 'BODY_FIELD' ? 'Body Field' : 'Data Type'
+  const typeColor = rv.validationType === 'HEADER' ? '#1677ff' : rv.validationType === 'BODY_EXACT_MATCH' ? '#722ed1' : rv.validationType === 'BODY_FIELD' ? '#13c2c2' : '#fa8c16'
+
+  return (
+    <div style={{ background: bgColor, border: `1px solid ${borderColor}`, borderRadius: 4, padding: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {rv.passed
+          ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 14 }} />
+          : <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 14 }} />}
+        <span style={{ background: typeColor, color: '#fff', fontSize: 10, padding: '1px 5px', borderRadius: 3 }}>{typeLabel}</span>
+        <Tag color={rv.passed ? 'green' : 'red'} style={{ margin: 0, fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>{rv.passed ? 'PASS' : 'FAIL'}</Tag>
+      </div>
+
+      <div style={{ fontSize: 12 }}>
+        {rv.validationType === 'HEADER' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <Text type="secondary" style={{ fontSize: 11 }}>Header:</Text>
+              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{rv.headerName}</code>
+              <Text type="secondary" style={{ fontSize: 11 }}>{rv.operator}</Text>
+            </div>
+            {!rv.passed && (
+              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500, minWidth: 55 }}>Expected:</Text>
+                  <code style={{ fontSize: 11, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.expected || '(empty)'}</code>
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500, minWidth: 55 }}>Actual:</Text>
+                  <code style={{ fontSize: 11, background: '#fff2f0', border: '1px solid #ffa39e', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.actual || '(missing)'}</code>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {rv.validationType === 'BODY_EXACT_MATCH' && (
+          <div>
+            <Text type="secondary" style={{ fontSize: 11 }}>{(rv.matchMode || 'STRICT').charAt(0) + (rv.matchMode || 'STRICT').slice(1).toLowerCase()} body match: </Text>
+            <Text style={{ fontSize: 11 }}>{rv.message}</Text>
+            {!rv.passed && rv.expected && (
+              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div>
+                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500 }}>Expected:</Text>
+                  <pre style={{ fontSize: 10, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '4px 8px', borderRadius: 3, margin: '2px 0 0', maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{rv.expected}</pre>
+                </div>
+                <div>
+                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500 }}>Actual:</Text>
+                  <pre style={{ fontSize: 10, background: '#fff2f0', border: '1px solid #ffa39e', padding: '4px 8px', borderRadius: 3, margin: '2px 0 0', maxHeight: 150, overflow: 'auto', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{rv.actual || '(empty)'}</pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {rv.validationType === 'BODY_FIELD' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{rv.jsonPath}</code>
+              <Text type="secondary" style={{ fontSize: 11 }}>{rv.operator}</Text>
+            </div>
+            {!rv.passed && (
+              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500, minWidth: 55 }}>Expected:</Text>
+                  <code style={{ fontSize: 11, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.expected || '(empty)'}</code>
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500, minWidth: 55 }}>Actual:</Text>
+                  <code style={{ fontSize: 11, background: '#fff2f0', border: '1px solid #ffa39e', padding: '2px 6px', borderRadius: 3, wordBreak: 'break-all' }}>{rv.actual || '(missing)'}</code>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {rv.validationType === 'BODY_DATA_TYPE' && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <code style={{ fontSize: 11, background: 'rgba(0,0,0,0.06)', padding: '1px 4px', borderRadius: 2 }}>{rv.jsonPath}</code>
+            </div>
+            {!rv.passed && (
+              <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                  <Text style={{ fontSize: 11, color: '#52c41a', fontWeight: 500, minWidth: 55 }}>Expected:</Text>
+                  <code style={{ fontSize: 11, background: '#f6ffed', border: '1px solid #b7eb8f', padding: '2px 6px', borderRadius: 3 }}>{rv.expectedType}</code>
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                  <Text style={{ fontSize: 11, color: '#ff4d4f', fontWeight: 500, minWidth: 55 }}>Actual:</Text>
+                  <code style={{ fontSize: 11, background: '#fff2f0', border: '1px solid #ffa39e', padding: '2px 6px', borderRadius: 3 }}>{rv.actualType || 'unknown'}</code>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 /* ─── Tab-based Step Detail ─── */
 
 function StepResultTabs({ step, method, depResults, allSteps }: {
@@ -207,6 +309,7 @@ function StepResultTabs({ step, method, depResults, allSteps }: {
   const hasRequestBody = step.requestBody && step.requestBody.trim().length > 0
   const hasExtractedVars = step.extractedVariables && Object.keys(step.extractedVariables).length > 0
   const hasVerifications = step.verificationResults && step.verificationResults.length > 0
+  const hasResponseValidations = step.responseValidationResults && step.responseValidationResults.length > 0
   const hasWarnings = step.warnings && step.warnings.length > 0
 
   const tabItems = []
@@ -436,6 +539,32 @@ function StepResultTabs({ step, method, depResults, allSteps }: {
     })
   }
 
+  /* ── Response Validation Tab ── */
+  if (hasResponseValidations) {
+    const passed = step.responseValidationResults.filter(rv => rv.passed).length
+    const total = step.responseValidationResults.length
+    const allPassed = passed === total
+
+    tabItems.push({
+      key: 'responseValidation',
+      label: (
+        <span>
+          Response Validation
+          <Tag color={allPassed ? 'green' : 'red'} style={{ margin: '0 0 0 6px', fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>
+            {passed}/{total}
+          </Tag>
+        </span>
+      ),
+      children: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {step.responseValidationResults.map((rv, i) => (
+            <ResponseValidationCard key={i} rv={rv} />
+          ))}
+        </div>
+      ),
+    })
+  }
+
   /* ── Verifications Tab ── */
   if (hasVerifications) {
     const passed = step.verificationResults.filter(v => v.status === 'PASS').length
@@ -569,6 +698,13 @@ function StepResultCard({
               {depResults.length > 0 && (
                 <Tag color="geekblue" style={{ margin: 0 }}>{depResults.length} dep{depResults.length > 1 ? 's' : ''}</Tag>
               )}
+              {step.responseValidationResults?.length > 0 && (() => {
+                const passed = step.responseValidationResults.filter(rv => rv.passed).length
+                const total = step.responseValidationResults.length
+                return (
+                  <Tag color={passed === total ? 'green' : 'red'} style={{ margin: 0 }}>{passed}/{total} validations</Tag>
+                )
+              })()}
               {step.verificationResults?.length > 0 && (() => {
                 const passed = step.verificationResults.filter(v => v.status === 'PASS').length
                 const total = step.verificationResults.length

@@ -53,6 +53,7 @@ public class ExecutionService {
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
     private final VerificationService verificationService;
+    private final ResponseValidationService responseValidationService;
 
     private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
     private static final Pattern STEP_VAR_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
@@ -88,6 +89,7 @@ public class ExecutionService {
 
         // Also load verifications + assertions (separate query to avoid Cartesian product)
         mergeVerifications(steps, suiteId);
+        mergeResponseValidations(steps, suiteId);
 
         // 4. Build the full dependency graph and topologically sort all steps
         Map<UUID, TestStep> stepMap = buildStepMap(steps);
@@ -116,6 +118,7 @@ public class ExecutionService {
         List<TestStep> allSteps = stepRepo.findBySuiteIdWithDetails(suiteId);
         // Also load verifications + assertions (separate query to avoid Cartesian product)
         mergeVerifications(allSteps, suiteId);
+        mergeResponseValidations(allSteps, suiteId);
         Map<UUID, TestStep> stepMap = buildStepMap(allSteps);
 
         if (!stepMap.containsKey(stepId)) {
@@ -146,6 +149,7 @@ public class ExecutionService {
         }
         // Also load verifications + assertions (separate query to avoid Cartesian product)
         mergeVerifications(steps, suiteId);
+        mergeResponseValidations(steps, suiteId);
         Map<UUID, TestStep> stepMap = buildStepMap(steps);
         Map<UUID, Set<UUID>> depGraph = buildDependencyGraph(steps);
         List<UUID> executionOrder = topologicalSortAll(steps, depGraph);
@@ -167,6 +171,7 @@ public class ExecutionService {
         List<TestStep> allSteps = stepRepo.findBySuiteIdWithDetails(suiteId);
         // Also load verifications + assertions (separate query to avoid Cartesian product)
         mergeVerifications(allSteps, suiteId);
+        mergeResponseValidations(allSteps, suiteId);
         Map<UUID, TestStep> stepMap = buildStepMap(allSteps);
         if (!stepMap.containsKey(stepId)) {
             throw new NotFoundException("Test step " + stepId + " not found in suite " + suiteId);
@@ -278,9 +283,24 @@ public class ExecutionService {
                 allExtractedVars.putAll(result.getExtractedVariables());
             }
 
-            // Run verifications
-            if (step.getVerifications() != null && !step.getVerifications().isEmpty()
+            // Run response validations
+            if (step.getResponseValidations() != null && !step.getResponseValidations().isEmpty()
                     && !"ERROR".equals(result.getStatus()) && !"SKIPPED".equals(result.getStatus())) {
+                List<ResponseValidationResultDto> valResults = responseValidationService.runValidations(
+                        step.getResponseValidations(), result.getResponseBody(),
+                        result.getResponseHeaders() != null ? result.getResponseHeaders() : Collections.emptyMap(),
+                        prepared.env(), allExtractedVars, this);
+                result.setResponseValidationResults(valResults);
+                if ("SUCCESS".equals(result.getStatus()) || "RETRIED".equals(result.getStatus())) {
+                    boolean anyValFailed = valResults.stream().anyMatch(v -> !v.isPassed());
+                    if (anyValFailed) result.setStatus("VALIDATION_FAILED");
+                }
+            }
+
+            // Run infrastructure verifications
+            if (step.getVerifications() != null && !step.getVerifications().isEmpty()
+                    && !"ERROR".equals(result.getStatus()) && !"SKIPPED".equals(result.getStatus())
+                    && !"VALIDATION_FAILED".equals(result.getStatus())) {
                 List<VerificationResultDto> verResults = verificationService.runVerifications(
                         step.getVerifications(), prepared.env(), allExtractedVars, preListeners, this);
                 result.setVerificationResults(verResults);
@@ -305,10 +325,11 @@ public class ExecutionService {
         long totalMs = System.currentTimeMillis() - suiteStart;
         boolean anyError = results.stream().anyMatch(r -> "ERROR".equals(r.getStatus()));
         boolean anyVerFailed = results.stream().anyMatch(r -> "VERIFICATION_FAILED".equals(r.getStatus()));
+        boolean anyValFailed = results.stream().anyMatch(r -> "VALIDATION_FAILED".equals(r.getStatus()));
         boolean anySuccess = results.stream().anyMatch(r -> "SUCCESS".equals(r.getStatus()) || "RETRIED".equals(r.getStatus()));
 
         String overallStatus;
-        if (!anyError && !anyVerFailed) overallStatus = "SUCCESS";
+        if (!anyError && !anyVerFailed && !anyValFailed) overallStatus = "SUCCESS";
         else if (anySuccess) overallStatus = "PARTIAL_FAILURE";
         else overallStatus = "FAILURE";
 
@@ -569,6 +590,23 @@ public class ExecutionService {
     }
 
     /**
+     * Load response validations in a separate query (avoids Cartesian product) and merge into steps.
+     */
+    private void mergeResponseValidations(List<TestStep> steps, UUID suiteId) {
+        List<TestStep> withRv = stepRepo.findBySuiteIdWithResponseValidations(suiteId);
+        Map<UUID, Set<StepResponseValidation>> rvMap = new HashMap<>();
+        for (TestStep sv : withRv) {
+            rvMap.put(sv.getId(), sv.getResponseValidations());
+        }
+        for (TestStep step : steps) {
+            Set<StepResponseValidation> rvs = rvMap.get(step.getId());
+            if (rvs != null) {
+                step.setResponseValidations(rvs);
+            }
+        }
+    }
+
+    /**
      * Build adjacency: stepId -> set of stepIds it depends on.
      */
     private Map<UUID, Set<UUID>> buildDependencyGraph(List<TestStep> steps) {
@@ -824,14 +862,31 @@ public class ExecutionService {
                 allExtractedVars.putAll(result.getExtractedVariables());
             }
 
-            // Run verifications AFTER HTTP call (if step didn't error/skip)
-            if (step.getVerifications() != null && !step.getVerifications().isEmpty()
+            // Run response validations AFTER HTTP call (if step didn't error/skip)
+            if (step.getResponseValidations() != null && !step.getResponseValidations().isEmpty()
                     && !"ERROR".equals(result.getStatus()) && !"SKIPPED".equals(result.getStatus())) {
+                List<ResponseValidationResultDto> valResults = responseValidationService.runValidations(
+                        step.getResponseValidations(), result.getResponseBody(),
+                        result.getResponseHeaders() != null ? result.getResponseHeaders() : Collections.emptyMap(),
+                        env, allExtractedVars, this);
+                result.setResponseValidationResults(valResults);
+
+                if ("SUCCESS".equals(result.getStatus()) || "RETRIED".equals(result.getStatus())) {
+                    boolean anyValFailed = valResults.stream().anyMatch(v -> !v.isPassed());
+                    if (anyValFailed) {
+                        result.setStatus("VALIDATION_FAILED");
+                    }
+                }
+            }
+
+            // Run infrastructure verifications AFTER response validation (if step didn't error/skip)
+            if (step.getVerifications() != null && !step.getVerifications().isEmpty()
+                    && !"ERROR".equals(result.getStatus()) && !"SKIPPED".equals(result.getStatus())
+                    && !"VALIDATION_FAILED".equals(result.getStatus())) {
                 List<VerificationResultDto> verResults = verificationService.runVerifications(
                         step.getVerifications(), env, allExtractedVars, preListeners, this);
                 result.setVerificationResults(verResults);
 
-                // Adjust status if verification failed
                 if ("SUCCESS".equals(result.getStatus()) || "RETRIED".equals(result.getStatus())) {
                     boolean anyVerFailed = verResults.stream().anyMatch(v -> !"PASS".equals(v.getStatus()));
                     if (anyVerFailed) {
@@ -867,11 +922,12 @@ public class ExecutionService {
         // Determine overall status
         boolean anyError = results.stream().anyMatch(r -> "ERROR".equals(r.getStatus()));
         boolean anyVerFailed = results.stream().anyMatch(r -> "VERIFICATION_FAILED".equals(r.getStatus()));
+        boolean anyValFailed = results.stream().anyMatch(r -> "VALIDATION_FAILED".equals(r.getStatus()));
         boolean anySuccess = results.stream().anyMatch(r ->
                 "SUCCESS".equals(r.getStatus()) || "RETRIED".equals(r.getStatus()));
 
         String overallStatus;
-        if (!anyError && !anyVerFailed) {
+        if (!anyError && !anyVerFailed && !anyValFailed) {
             overallStatus = "SUCCESS";
         } else if (anySuccess) {
             overallStatus = "PARTIAL_FAILURE";

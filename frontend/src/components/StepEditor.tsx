@@ -29,6 +29,9 @@ import type {
   AssertionOperatorType,
   AssertionDto,
   VerificationDto,
+  ResponseValidationDto,
+  ResponseValidationType,
+  ExpectedDataType,
 } from '../types/testSuite'
 import type { ConnectorType, HeaderDto } from '../types/environment'
 import { testStepApi } from '../services/testSuiteApi'
@@ -56,6 +59,7 @@ type ExtractRow = StepExtractVariableDto & { _clientId: string }
 type FormDataRow = FormDataField & { _clientId: string }
 type AssertionRow = AssertionDto & { _clientId: string }
 type VerificationRow = Omit<VerificationDto, 'assertions'> & { _clientId: string; assertions: AssertionRow[] }
+type ResponseValidationRow = ResponseValidationDto & { _clientId: string }
 
 // Kafka query helpers: separate topic/key fields stored as newline-separated query
 function parseKafkaQuery(query: string): { topic: string; key: string } {
@@ -118,6 +122,15 @@ const ASSERTION_OPERATOR_OPTIONS: { label: string; value: AssertionOperatorType 
   { label: 'Less or Equal', value: 'LTE' },
   { label: 'Exists', value: 'EXISTS' },
   { label: 'Not Exists', value: 'NOT_EXISTS' },
+]
+
+const DATA_TYPE_OPTIONS: { label: string; value: ExpectedDataType }[] = [
+  { label: 'String', value: 'STRING' },
+  { label: 'Number', value: 'NUMBER' },
+  { label: 'Boolean', value: 'BOOLEAN' },
+  { label: 'Array', value: 'ARRAY' },
+  { label: 'Object', value: 'OBJECT' },
+  { label: 'Null', value: 'NULL' },
 ]
 
 // ---- Component ----
@@ -198,6 +211,15 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
         ...v,
         _clientId: genClientId(),
         assertions: (v.assertions ?? []).map((a) => ({ ...a, _clientId: genClientId() })),
+      })),
+  )
+
+  // ---- Response Validations state ----
+  const [responseValidations, setResponseValidations] = useState<ResponseValidationRow[]>(
+    () =>
+      (step?.responseValidations ?? []).map((rv) => ({
+        ...rv,
+        _clientId: genClientId(),
       })),
   )
 
@@ -423,6 +445,33 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
   }
 
   // ====================
+  // Response Validation helpers
+  // ====================
+  const addResponseValidation = (type: ResponseValidationType) => {
+    setResponseValidations([
+      ...responseValidations,
+      {
+        _clientId: genClientId(),
+        validationType: type,
+        headerName: '',
+        jsonPath: '',
+        operator: 'EQUALS',
+        expectedValue: '',
+        expectedBody: '',
+        matchMode: 'STRICT',
+        expectedType: 'STRING',
+      },
+    ])
+  }
+  const updateResponseValidation = (index: number, field: string, value: unknown) => {
+    const updated = [...responseValidations]
+    updated[index] = { ...updated[index], [field]: value }
+    setResponseValidations(updated)
+  }
+  const removeResponseValidation = (index: number) => {
+    setResponseValidations(responseValidations.filter((_, i) => i !== index))
+  }
+
   // Form Data helpers
   // ====================
   const addFormDataField = () => {
@@ -501,6 +550,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
         ...rest,
         assertions: assertions.map(({ _clientId: __, ...aRest }) => aRest),
       })),
+      responseValidations: responseValidations.map(({ _clientId: _, ...rest }) => rest),
     }
 
     try {
@@ -1227,6 +1277,106 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                 <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addExtractVariable} style={{ marginTop: 8 }}>
                   Add Variable
                 </Button>
+              </div>
+            ),
+          },
+          {
+            key: 'responseValidation',
+            label: (
+              <span>
+                Response Validation
+                {responseValidations.length > 0 && (
+                  <Badge count={responseValidations.length} size="small" style={{ marginLeft: 6, backgroundColor: '#13c2c2' }} />
+                )}
+              </span>
+            ),
+            children: (
+              <div>
+                {responseValidations.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: '#999', padding: 16, fontSize: 12 }}>No response validation rules added</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {responseValidations.map((rv, rvIdx) => {
+                      const typeLabel = rv.validationType === 'HEADER' ? 'Header' : rv.validationType === 'BODY_EXACT_MATCH' ? 'Body Match' : rv.validationType === 'BODY_FIELD' ? 'Body Field' : 'Data Type'
+                      const typeColor = rv.validationType === 'HEADER' ? '#1677ff' : rv.validationType === 'BODY_EXACT_MATCH' ? '#722ed1' : rv.validationType === 'BODY_FIELD' ? '#13c2c2' : '#fa8c16'
+                      return (
+                        <div key={rv._clientId} style={{ border: '1px solid #f0f0f0', borderRadius: 4, padding: 10, background: '#fafafa' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <span style={{ background: typeColor, color: '#fff', fontSize: 11, padding: '1px 6px', borderRadius: 3 }}>{typeLabel}</span>
+                            <div style={{ flex: 1 }} />
+                            <Popconfirm title="Remove this validation?" onConfirm={() => removeResponseValidation(rvIdx)} okText="Yes" cancelText="No">
+                              <Button type="text" danger size="small" icon={<DeleteOutlined />} />
+                            </Popconfirm>
+                          </div>
+
+                          {rv.validationType === 'HEADER' && (
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                              <div style={{ flex: 1, minWidth: 120 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Header Name</div>
+                                <Input size="small" value={rv.headerName ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'headerName', e.target.value)} placeholder="Content-Type" />
+                              </div>
+                              <div style={{ width: 130 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Operator</div>
+                                <Select size="small" style={{ width: '100%' }} value={rv.operator ?? 'EQUALS'} onChange={(v) => updateResponseValidation(rvIdx, 'operator', v)} options={ASSERTION_OPERATOR_OPTIONS} />
+                              </div>
+                              <div style={{ flex: 1, minWidth: 120 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Value</div>
+                                <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="application/json" envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                              </div>
+                            </div>
+                          )}
+
+                          {rv.validationType === 'BODY_EXACT_MATCH' && (
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                <span style={{ fontSize: 11, color: '#595959' }}>Match Mode:</span>
+                                <Select size="small" style={{ width: 140 }} value={rv.matchMode ?? 'STRICT'} onChange={(v) => updateResponseValidation(rvIdx, 'matchMode', v)} options={[{ value: 'STRICT', label: 'Strict' }, { value: 'FLEXIBLE', label: 'Flexible' }, { value: 'STRUCTURE', label: 'Structure' }]} />
+                              </div>
+                              <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Body (JSON)</div>
+                              <PlaceholderInput mode="textarea" rows={4} size="small" value={rv.expectedBody ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedBody', v)} placeholder='{"key": "value"}' envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                            </div>
+                          )}
+
+                          {rv.validationType === 'BODY_FIELD' && (
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                              <div style={{ flex: 1, minWidth: 120 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>JSON Path</div>
+                                <Input size="small" value={rv.jsonPath ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'jsonPath', e.target.value)} placeholder="$.data.id" />
+                              </div>
+                              <div style={{ width: 130 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Operator</div>
+                                <Select size="small" style={{ width: '100%' }} value={rv.operator ?? 'EQUALS'} onChange={(v) => updateResponseValidation(rvIdx, 'operator', v)} options={ASSERTION_OPERATOR_OPTIONS} />
+                              </div>
+                              <div style={{ flex: 1, minWidth: 120 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Value</div>
+                                <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="expected" envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                              </div>
+                            </div>
+                          )}
+
+                          {rv.validationType === 'BODY_DATA_TYPE' && (
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                              <div style={{ flex: 1, minWidth: 150 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>JSON Path</div>
+                                <Input size="small" value={rv.jsonPath ?? ''} onChange={(e) => updateResponseValidation(rvIdx, 'jsonPath', e.target.value)} placeholder="$.data.count" />
+                              </div>
+                              <div style={{ width: 130 }}>
+                                <div style={{ fontSize: 11, color: '#595959', marginBottom: 2 }}>Expected Type</div>
+                                <Select size="small" style={{ width: '100%' }} value={rv.expectedType ?? 'STRING'} onChange={(v) => updateResponseValidation(rvIdx, 'expectedType', v)} options={DATA_TYPE_OPTIONS} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+                <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('HEADER')}>Header Check</Button>
+                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_EXACT_MATCH')}>Body Match</Button>
+                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_FIELD')}>Field Check</Button>
+                  <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={() => addResponseValidation('BODY_DATA_TYPE')}>Type Check</Button>
+                </div>
               </div>
             ),
           },

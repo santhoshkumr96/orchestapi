@@ -111,6 +111,11 @@ public class TestStep {
     @Builder.Default
     private Set<StepVerification> verifications = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder")
+    @Builder.Default
+    private Set<StepResponseValidation> responseValidations = new LinkedHashSet<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

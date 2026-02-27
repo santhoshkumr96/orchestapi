@@ -27,10 +27,24 @@ export interface VerificationResultDto {
   assertions: AssertionResultDto[]
 }
 
+export interface ResponseValidationResultDto {
+  validationType: string
+  passed: boolean
+  message: string
+  headerName: string
+  jsonPath: string
+  operator: string
+  expected: string
+  actual: string
+  matchMode: string
+  expectedType: string
+  actualType: string
+}
+
 export interface StepExecutionResult {
   stepId: string
   stepName: string
-  status: string // SUCCESS, ERROR, SKIPPED, RETRIED, VERIFICATION_FAILED
+  status: string // SUCCESS, ERROR, SKIPPED, RETRIED, VERIFICATION_FAILED, VALIDATION_FAILED
   responseCode: number
   responseBody: string
   responseHeaders: Record<string, string>
@@ -39,6 +53,7 @@ export interface StepExecutionResult {
   fromCache: boolean
   extractedVariables: Record<string, string>
   verificationResults: VerificationResultDto[]
+  responseValidationResults: ResponseValidationResultDto[]
   requestUrl: string
   requestBody: string
   requestHeaders: Record<string, string>
