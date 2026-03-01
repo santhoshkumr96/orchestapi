@@ -29,10 +29,11 @@ export interface StepNodeData {
   durationMs?: number
   selected: boolean
   depCount: number
+  dimmed: boolean
 }
 
 function StepNode({ data }: NodeProps & { data: StepNodeData }) {
-  const { step, status, durationMs, selected, depCount } = data
+  const { step, status, durationMs, selected, depCount, dimmed } = data
   const style = STATUS_STYLES[status] || STATUS_STYLES.default
   const methodColor = METHOD_COLORS[step.method] || '#666'
 
@@ -50,6 +51,7 @@ function StepNode({ data }: NodeProps & { data: StepNodeData }) {
           cursor: 'pointer',
           boxShadow: selected ? '0 0 0 1px #1677ff' : status === 'running' ? '0 0 8px rgba(22,119,255,0.3)' : '0 1px 2px rgba(0,0,0,0.06)',
           animation: status === 'running' ? 'dagPulse 1.5s ease-in-out infinite' : undefined,
+          opacity: dimmed ? 0.15 : 1,
           transition: 'all 0.3s ease',
         }}
       >
