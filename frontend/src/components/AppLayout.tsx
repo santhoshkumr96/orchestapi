@@ -5,6 +5,8 @@ import {
   ExperimentOutlined,
   SettingOutlined,
   PlayCircleOutlined,
+  CloudServerOutlined,
+  NodeIndexOutlined,
 } from '@ant-design/icons'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 
@@ -15,6 +17,8 @@ const menuItems = [
   { key: '/test-suites', icon: <ExperimentOutlined />, label: 'Test Suites' },
   { key: '/environments', icon: <SettingOutlined />, label: 'Environments' },
   { key: '/runs', icon: <PlayCircleOutlined />, label: 'Runs' },
+  { key: '/mock-server', icon: <CloudServerOutlined />, label: 'Mock Server' },
+  { key: '/webhooks', icon: <NodeIndexOutlined />, label: 'Webhooks' },
 ]
 
 export default function AppLayout() {

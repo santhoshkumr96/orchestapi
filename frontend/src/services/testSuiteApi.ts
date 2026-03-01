@@ -68,6 +68,7 @@ export interface SuiteExecutionResult {
 }
 
 const SUITES_BASE = '/api/test-suites'
+const _basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
 
 export const testSuiteApi = {
   list: (params: TestSuiteListParams = {}) =>
@@ -106,7 +107,7 @@ export const testSuiteApi = {
   ): (() => void) => {
     const params = new URLSearchParams()
     if (environmentId) params.set('environmentId', environmentId)
-    const url = `${SUITES_BASE}/${suiteId}/run/stream?${params.toString()}`
+    const url = `${_basePath}${SUITES_BASE}/${suiteId}/run/stream?${params.toString()}`
 
     const eventSource = new EventSource(url)
 
@@ -205,7 +206,7 @@ export const testStepApi = {
   ): (() => void) => {
     const params = new URLSearchParams()
     if (environmentId) params.set('environmentId', environmentId)
-    const url = `${SUITES_BASE}/${suiteId}/steps/${stepId}/run/stream?${params.toString()}`
+    const url = `${_basePath}${SUITES_BASE}/${suiteId}/steps/${stepId}/run/stream?${params.toString()}`
 
     const eventSource = new EventSource(url)
 

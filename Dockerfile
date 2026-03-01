@@ -5,6 +5,8 @@
 
 # ── Stage 1: Build Frontend ──────────────────────────────────
 FROM node:20-alpine AS frontend-build
+ARG VITE_BASE_PATH=/
+ENV VITE_BASE_PATH=${VITE_BASE_PATH}
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci --prefer-offline
@@ -45,9 +47,9 @@ USER orchestapi
 # Expose the default port
 EXPOSE 8080
 
-# Health check using Spring Actuator
+# Health check using Spring Actuator (respects CONTEXT_PATH)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
+  CMD wget -q --spider http://localhost:8080${CONTEXT_PATH:-}/actuator/health || exit 1
 
 # JVM tuning for containers
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"

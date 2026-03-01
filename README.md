@@ -5,7 +5,7 @@
 <h1 align="center">OrchestAPI</h1>
 
 <p align="center">
-  Self-hosted API test orchestration platform with DAG-based dependencies, live streaming, infrastructure verification, and scheduled execution.
+  Self-hosted API test orchestration platform with DAG-based dependencies, live streaming, infrastructure verification, mock servers, webhook testing, and scheduled execution.
 </p>
 
 <p align="center">
@@ -73,6 +73,8 @@
 - [Scheduling](#scheduling)
 - [Run History](#run-history)
 - [Dashboard](#dashboard)
+- [Mock Server](#mock-server)
+- [Webhook Tester](#webhook-tester)
 - [Curl Import](#curl-import)
 - [Connector Reference](#connector-reference)
 - [Configuration](#configuration)
@@ -607,6 +609,125 @@ The dashboard shows execution statistics at a glance:
 - **Active Schedules** — number of enabled schedules
 - **Total Suites** — number of test suites
 - **Total Environments** — number of environments
+
+---
+
+## Mock Server
+
+Create standalone mock API endpoints to simulate external services during testing. Go to **Mock Server** in the sidebar.
+
+### Mock Servers
+
+| Field | Description |
+|-------|-------------|
+| **Name** | Server name (unique) |
+| **Description** | Optional description |
+| **Enabled** | Toggle to enable/disable the mock server |
+
+Each mock server gets a unique URL: `http://your-host/mock/{serverId}/...`
+
+### Mock Endpoints
+
+Each endpoint defines a path pattern, HTTP method, and a configurable response.
+
+| Field | Description |
+|-------|-------------|
+| **Name** | Endpoint name |
+| **HTTP Method** | GET, POST, PUT, DELETE, PATCH, or ANY |
+| **Path Pattern** | URL path to match (supports `:param` and `/**` wildcard) |
+| **Response Status** | HTTP status code to return |
+| **Response Body** | Body to return |
+| **Response Headers** | Custom headers to include in the response |
+| **Delay (ms)** | Artificial delay before responding |
+| **Match Rules** | Additional conditions (header, query param, body JSON path) |
+
+**Path Matching:**
+
+| Pattern | Matches |
+|---------|---------|
+| `/api/users` | Exact path |
+| `/api/users/:id` | Parameterized segment (`/api/users/123`) |
+| `/api/**` | Wildcard — any path under `/api/` |
+
+**Match Rules** (all must match — AND logic):
+
+| Type | Description |
+|------|-------------|
+| `HEADER` | Match a request header key (and optionally value) |
+| `QUERY_PARAM` | Match a query parameter key (and optionally value) |
+| `BODY_JSON_PATH` | Match a JSON path in the request body |
+
+Endpoints are evaluated in sort order — first match wins.
+
+### Request Logging
+
+All incoming requests are logged with method, path, headers, body, response status, duration, and whether an endpoint was matched.
+
+---
+
+## Webhook Tester
+
+Receive and inspect incoming HTTP requests in real-time — like webhook.site, but self-hosted. Go to **Webhooks** in the sidebar.
+
+### Creating a Webhook
+
+| Field | Description |
+|-------|-------------|
+| **Name** | Webhook name (unique) |
+| **Description** | Optional description |
+| **Default Response Status** | HTTP status code returned to the caller (default: 200) |
+| **Default Response Body** | Body returned to the caller |
+| **Default Response Headers** | Custom headers returned to the caller |
+
+Each webhook gets a unique URL: `http://your-host/webhook/{webhookId}/...`
+
+Any HTTP method can be used — GET, POST, PUT, DELETE, PATCH, etc. The webhook captures everything and returns the configured response.
+
+### Request Inspection
+
+The detail page shows a two-panel layout:
+
+- **Left panel**: Live list of incoming requests (method, path, source IP, timestamp)
+- **Right panel**: Full request detail for the selected request
+
+**Captured data:**
+
+| Field | Description |
+|-------|-------------|
+| HTTP Method | GET, POST, PUT, etc. |
+| Path | The path after `/webhook/{id}/` |
+| Headers | All request headers |
+| Query Parameters | URL query string parameters |
+| Body | Text/JSON shown as-is, binary content base64-encoded |
+| Content-Type | Request content type |
+| Content-Length | Body size in bytes |
+| Source IP | Caller's IP address (supports X-Forwarded-For) |
+| Files | Multipart file uploads with name, type, size, and content |
+
+**File handling:**
+
+| Content Type | Behavior |
+|-------------|----------|
+| JSON / text | Stored as-is, formatted in the UI |
+| Images (image/*) | Base64-encoded, rendered inline in the UI |
+| Binary (pdf, audio, video, octet-stream) | Base64-encoded, size displayed |
+| Multipart | Files extracted with preview (images) and download buttons |
+
+### Real-Time Streaming
+
+The detail page connects via SSE and shows new requests instantly with a green "Live" indicator. Multiple browser tabs can monitor the same webhook simultaneously.
+
+### Limits
+
+| Limit | Value |
+|-------|-------|
+| Max request body size | 10 MB (returns 413 if exceeded) |
+| Max stored requests per webhook | 500 (oldest auto-trimmed) |
+| SSE connection timeout | 60 minutes |
+
+### Disabled Webhooks
+
+When a webhook is disabled, incoming requests receive a `503 Service Unavailable` response.
 
 ---
 

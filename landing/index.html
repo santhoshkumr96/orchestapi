@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OrchestAPI — Self-Hosted API Test Orchestration Platform</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230a2540'/%3E%3Cstop offset='100%25' stop-color='%230891b2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23bg)'/%3E%3Cline x1='29' y1='20' x2='22' y2='28' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='35' y1='20' x2='42' y2='28' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='22' y1='38' x2='29' y2='44' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='42' y1='38' x2='35' y2='44' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M38,15 L35,20 L29,20 L26,15 L29,10 L35,10 Z' fill='rgba(255,255,255,0.92)'/%3E%3Cpath d='M31,13 L34,15 L31,17' stroke='%230a2540' stroke-width='1.3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25,33 L22,38 L16,38 L13,33 L16,28 L22,28 Z' fill='rgba(255,255,255,0.1)' stroke='rgba(255,255,255,0.75)' stroke-width='1.2'/%3E%3Cpath d='M51,33 L48,38 L42,38 L39,33 L42,28 L48,28 Z' fill='rgba(255,255,255,0.85)'/%3E%3Cpath d='M38,49 L35,54 L29,54 L26,49 L29,44 L35,44 Z' fill='rgba(255,255,255,0.92)'/%3E%3Cpath d='M30,49 L31.5,51 L34.5,47' stroke='%230891b2' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <meta name="description" content="OrchestAPI is a self-hosted API test orchestration platform for QA teams. Build, chain, validate, and schedule API tests with dependency resolution, infrastructure verification, and live streaming results." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-gray);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Design Tokens ────────────────────────────────────── */
+    :root {
+      --bg-dark: #080b16;
+      --bg-dark-2: #0d1221;
+      --bg-dark-3: #131a2e;
+      --bg-dark-card: #0f1525;
+      --bg-light: #f8fafc;
+      --bg-light-2: #f0f4f8;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+      --cyan: #06b6d4;
+      --purple: #8b5cf6;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --red: #ef4444;
+      --rose: #f43f5e;
+      --text-white: #f1f5f9;
+      --text-gray: #94a3b8;
+      --text-muted: #64748b;
+      --text-dark: #1e293b;
+      --border: rgba(255, 255, 255, 0.06);
+      --border-accent: rgba(59, 130, 246, 0.25);
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    /* ── Typography ────────────────────────────────────────── */
+    h1, h2, h3, h4, h5 { font-family: 'Syne', sans-serif; color: var(--text-white); line-height: 1.15; }
+    h1 { font-size: clamp(2.5rem, 5.5vw, 4.2rem); font-weight: 800; letter-spacing: -1.5px; }
+    h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; letter-spacing: -0.8px; }
+    h3 { font-size: 1.25rem; font-weight: 600; }
+    code, .mono { font-family: 'Fira Code', monospace; }
+
+    .section-label {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: block;
+    }
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--text-gray);
+      max-width: 620px;
+      line-height: 1.7;
+    }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 100px 0; position: relative; }
+    .section--dark { background: var(--bg-dark-2); }
+
+    /* ── Animations ────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes terminal-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* ── Navigation ───────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0 24px;
+      transition: background 0.3s, box-shadow 0.3s, backdrop-filter 0.3s;
+    }
+    .nav.scrolled {
+      background: rgba(8, 11, 22, 0.85);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.35rem;
+      color: var(--text-white);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-logo .logo-svg {
+      flex-shrink: 0;
+    }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-white); }
+    .nav-cta {
+      background: var(--accent);
+      color: white !important;
+      padding: 8px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .nav-cta:hover { background: var(--accent-light); transform: translateY(-1px); }
+
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+    .nav-toggle svg { width: 24px; height: 24px; stroke: var(--text-white); }
+
+    /* ── Hero ──────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 120px 0 80px;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .hero-bg .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: pulse-glow 6s ease-in-out infinite;
+    }
+    .hero-bg .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.2), transparent 70%);
+      top: -200px; right: -100px;
+    }
+    .hero-bg .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent 70%);
+      bottom: -150px; left: -100px;
+      animation-delay: 3s;
+    }
+    .hero-bg .orb-3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.1), transparent 70%);
+      top: 40%; left: 50%;
+      animation-delay: 1.5s;
+    }
+    .hero-bg .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 80px 80px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 560px;
+      flex-shrink: 0;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-glow);
+      border: 1px solid var(--border-accent);
+      border-radius: 100px;
+      padding: 6px 16px 6px 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent-light);
+      margin-bottom: 28px;
+      animation: fadeUp 0.8s ease forwards;
+    }
+    .hero-badge .dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+    .hero h1 {
+      animation: fadeUp 0.8s ease 0.15s forwards;
+      opacity: 0;
+    }
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--accent-light), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--text-gray);
+      margin-top: 24px;
+      max-width: 580px;
+      line-height: 1.75;
+      animation: fadeUp 0.8s ease 0.3s forwards;
+      opacity: 0;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+      animation: fadeUp 0.8s ease 0.45s forwards;
+      opacity: 0;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      color: white;
+      box-shadow: 0 4px 24px rgba(59, 130, 246, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.45);
+      transform: translateY(-2px);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-white);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+
+    /* Terminal Mockup */
+    .hero-terminal {
+      position: relative;
+      width: 460px;
+      flex-shrink: 0;
+      animation: fadeIn 1s ease 0.6s forwards;
+      opacity: 0;
+    }
+    .terminal {
+      background: var(--bg-dark-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03);
+    }
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .terminal-dot--red { background: #ff5f57; }
+    .terminal-dot--yellow { background: #febc2e; }
+    .terminal-dot--green { background: #28c840; }
+    .terminal-title {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+    .terminal-body {
+      padding: 20px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      line-height: 1.9;
+      color: var(--text-gray);
+    }
+    .terminal-body .prompt { color: var(--green); }
+    .terminal-body .cmd { color: var(--text-white); }
+    .terminal-body .flag { color: var(--cyan); }
+    .terminal-body .str { color: var(--orange); }
+    .terminal-body .comment { color: var(--text-muted); font-style: italic; }
+    .terminal-body .success { color: var(--green); }
+    .terminal-body .info { color: var(--accent-light); }
+    .terminal-body .err { color: var(--red); }
+    .terminal-body .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--accent);
+      animation: terminal-blink 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    /* ── Stats Bar ─────────────────────────────────────────── */
+    .stats-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+      padding: 48px 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+    .stat-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--text-white);
+      letter-spacing: -1px;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── Feature Grid ─────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 56px;
+    }
+    .feature-card {
+      background: var(--bg-dark-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--card-accent, var(--accent)), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .feature-card:hover {
+      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+    }
+    .feature-card h3 { margin-bottom: 10px; font-size: 1.1rem; }
+    .feature-card p { font-size: 0.9rem; line-height: 1.65; color: var(--text-muted); }
+
+    /* ── Deep Dive Sections ───────────────────────────────── */
+    .deep-dive {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .deep-dive.reverse { direction: rtl; }
+    .deep-dive.reverse > * { direction: ltr; }
+    .deep-dive-visual {
+      background: var(--bg-dark-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      position: relative;
+    }
+    .deep-dive-content h2 { margin-bottom: 20px; }
+    .deep-dive-content p {
+      color: var(--text-gray);
+      margin-bottom: 24px;
+      line-height: 1.75;
+    }
+
+    /* Feature list items */
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.92rem;
+      color: var(--text-gray);
+    }
+    .feature-list .check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--green);
+      font-size: 0.65rem;
+    }
+
+    /* Connector chips */
+    .connector-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .connector-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.85rem;
+      color: var(--text-gray);
+      transition: all 0.2s;
+    }
+    .connector-chip:hover {
+      border-color: var(--accent);
+      background: var(--accent-glow);
+      color: var(--text-white);
+    }
+    .connector-chip .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── HTTP Methods Badge ──────────────────────────────── */
+    .method-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .method-badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid;
+      letter-spacing: 0.5px;
+    }
+    .method-badge--get { color: var(--green); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); }
+    .method-badge--post { color: var(--accent-light); border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.08); }
+    .method-badge--put { color: var(--orange); border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); }
+    .method-badge--delete { color: var(--red); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); }
+    .method-badge--patch { color: var(--purple); border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.08); }
+
+    /* ── Validation Types ─────────────────────────────────── */
+    .validation-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .validation-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+    .validation-card:hover { border-color: rgba(255,255,255,0.1); }
+    .validation-card h4 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text-white);
+      margin-bottom: 6px;
+    }
+    .validation-card p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ── How It Works ─────────────────────────────────────── */
+    .steps-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 56px;
+      position: relative;
+    }
+    .steps-flow::before {
+      content: '';
+      position: absolute;
+      top: 36px;
+      left: 60px;
+      right: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--cyan), var(--purple), var(--green));
+      opacity: 0.3;
+    }
+    .step-item {
+      text-align: center;
+      position: relative;
+    }
+    .step-number {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-white);
+      position: relative;
+      z-index: 2;
+    }
+    .step-item h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .step-item p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Tech Stack ──────────────────────────────────────── */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 48px;
+    }
+    .tech-card {
+      background: var(--bg-dark-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    .tech-card:hover {
+      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-3px);
+    }
+    .tech-card .tech-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .tech-card h4 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      color: var(--text-white);
+      margin-bottom: 4px;
+    }
+    .tech-card p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Getting Started ─────────────────────────────────── */
+    .getting-started-code {
+      margin-top: 40px;
+    }
+    .code-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 2;
+    }
+    .code-tab {
+      padding: 10px 24px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .code-tab.active {
+      color: var(--accent-light);
+      background: var(--bg-dark-card);
+      border-color: var(--border);
+    }
+    .code-block {
+      background: var(--bg-dark-card);
+      border: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) var(--radius);
+      padding: 28px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      line-height: 2;
+      overflow-x: auto;
+    }
+    .code-block .comment { color: var(--text-muted); }
+    .code-block .keyword { color: var(--purple); }
+    .code-block .string { color: var(--green); }
+    .code-block .flag { color: var(--cyan); }
+    .code-block .var { color: var(--orange); }
+
+    /* ── CTA Section ──────────────────────────────────────── */
+    .cta-section {
+      text-align: center;
+      padding: 120px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.08), transparent 65%);
+    }
+    .cta-section h2 { margin-bottom: 16px; position: relative; }
+    .cta-section p { position: relative; }
+    .cta-section .hero-actions { justify-content: center; position: relative; }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--text-white);
+      margin-bottom: 12px;
+    }
+    .footer p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 20px;
+    }
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text-white); }
+
+    /* ── DAG Visual ──────────────────────────────────────── */
+    .dag-visual {
+      padding: 20px;
+    }
+    .dag-node {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+      color: var(--text-gray);
+      transition: border-color 0.2s;
+    }
+    .dag-node:hover { border-color: rgba(255,255,255,0.12); }
+    .dag-node .node-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dag-node .node-name {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.78rem;
+      color: var(--text-white);
+    }
+    .dag-arrow {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 4px 0;
+      opacity: 0.4;
+    }
+    .dag-node--active { border-color: var(--accent); background: var(--accent-glow); }
+    .dag-node--done .node-status { background: var(--green); }
+    .dag-node--running .node-status { background: var(--accent); animation: pulse-glow 1.5s infinite; }
+    .dag-node--pending .node-status { background: var(--text-muted); }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .hero-terminal { display: none; }
+      .hero-content { max-width: 100%; }
+      .deep-dive { grid-template-columns: 1fr; gap: 40px; }
+      .deep-dive.reverse { direction: ltr; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps-flow { grid-template-columns: repeat(2, 1fr); }
+      .steps-flow::before { display: none; }
+      .tech-grid { grid-template-columns: repeat(2, 1fr); }
+      .connector-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .section { padding: 64px 0; }
+      .features-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      .steps-flow { grid-template-columns: 1fr; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .connector-grid { grid-template-columns: 1fr; }
+      .validation-cards { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 72px;
+        left: 0;
+        right: 0;
+        background: rgba(8, 11, 22, 0.95);
+        backdrop-filter: blur(20px);
+        padding: 24px;
+        gap: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-toggle { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════ Navigation ════════════ -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <svg class="logo-svg" width="30" height="30" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="lbg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a2540"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs>
+          <rect width="64" height="64" rx="14" fill="url(#lbg)"/>
+          <line x1="29" y1="20" x2="22" y2="28" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="35" y1="20" x2="42" y2="28" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="22" y1="38" x2="29" y2="44" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="42" y1="38" x2="35" y2="44" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M13,14 L11.5,16.6 L8.5,16.6 L7,14 L8.5,11.4 L11.5,11.4 Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.7"/>
+          <path d="M57,50 L55.5,52.6 L52.5,52.6 L51,50 L52.5,47.4 L55.5,47.4 Z" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.7"/>
+          <path d="M38,15 L35,20 L29,20 L26,15 L29,10 L35,10 Z" fill="rgba(255,255,255,0.92)"/><path d="M31,13 L34,15 L31,17" stroke="#0a2540" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M25,33 L22,38 L16,38 L13,33 L16,28 L22,28 Z" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
+          <path d="M51,33 L48,38 L42,38 L39,33 L42,28 L48,28 Z" fill="rgba(255,255,255,0.85)"/>
+          <path d="M38,49 L35,54 L29,54 L26,49 L29,44 L35,44 Z" fill="rgba(255,255,255,0.92)"/><path d="M30,49 L31.5,51 L34.5,47" stroke="#0891b2" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        OrchestAPI
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="#features">Features</a>
+        <a href="#testing">API Testing</a>
+        <a href="#validation">Validation</a>
+        <a href="#infra">Infrastructure</a>
+        <a href="docs.html" target="_blank">Docs</a>
+        <a href="#get-started" class="nav-cta">Get Started</a>
+      </div>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ════════════ Hero ════════════ -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+      <div class="grid-lines"></div>
+    </div>
+    <div class="container" style="display: flex; align-items: center; gap: 60px; position: relative;">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Self-hosted &middot; Open Source &middot; Enterprise Ready
+        </div>
+        <h1>
+          Orchestrate your<br/>
+          <span class="gradient-text">API tests</span> at scale
+        </h1>
+        <p class="hero-sub">
+          Build, chain, validate, and schedule API tests with intelligent dependency resolution,
+          infrastructure verification, and real-time streaming results. All self-hosted, all yours.
+        </p>
+        <div class="hero-actions">
+          <a href="#get-started" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Quick Start
+          </a>
+          <a href="#features" class="btn btn-outline">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            Learn More
+          </a>
+        </div>
+      </div>
+      <div class="hero-terminal">
+        <div class="terminal">
+          <div class="terminal-header">
+            <div class="terminal-dot terminal-dot--red"></div>
+            <div class="terminal-dot terminal-dot--yellow"></div>
+            <div class="terminal-dot terminal-dot--green"></div>
+            <span class="terminal-title">OrchestAPI &mdash; Run Results</span>
+          </div>
+          <div style="padding: 16px 20px;">
+            <!-- Run header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-family:'Syne',sans-serif;font-size:0.88rem;color:var(--text-white);font-weight:600;">User Checkout Flow</span>
+                <span style="font-size:0.65rem;padding:2px 8px;border-radius:4px;background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.25);font-weight:600;">SUCCESS</span>
+              </div>
+              <span style="font-size:0.72rem;color:var(--text-muted);">836ms</span>
+            </div>
+            <!-- Step results (timeline) -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;"></span>
+                <span style="font-size:0.68rem;padding:2px 6px;border-radius:3px;color:var(--accent-light);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);font-family:'Fira Code',monospace;font-weight:500;">POST</span>
+                <span style="font-size:0.8rem;color:var(--text-white);flex:1;">Auth Token</span>
+                <span style="font-size:0.65rem;color:var(--green);font-family:'Fira Code',monospace;">200</span>
+                <span style="font-size:0.65rem;color:var(--text-muted);">142ms</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;"></span>
+                <span style="font-size:0.68rem;padding:2px 6px;border-radius:3px;color:var(--green);background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);font-family:'Fira Code',monospace;font-weight:500;">GET</span>
+                <span style="font-size:0.8rem;color:var(--text-white);flex:1;">Get Products</span>
+                <span style="font-size:0.65rem;color:var(--green);font-family:'Fira Code',monospace;">200</span>
+                <span style="font-size:0.65rem;color:var(--text-muted);">89ms</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:8px 12px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;"></span>
+                <span style="font-size:0.68rem;padding:2px 6px;border-radius:3px;color:var(--accent-light);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);font-family:'Fira Code',monospace;font-weight:500;">POST</span>
+                <span style="font-size:0.8rem;color:var(--text-white);flex:1;">Add to Cart</span>
+                <span style="font-size:0.65rem;color:var(--green);font-family:'Fira Code',monospace;">201</span>
+                <span style="font-size:0.65rem;color:var(--text-muted);">201ms</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2);border-radius:6px;padding:8px 12px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pulse-glow 1.5s infinite;"></span>
+                <span style="font-size:0.68rem;padding:2px 6px;border-radius:3px;color:var(--accent-light);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);font-family:'Fira Code',monospace;font-weight:500;">POST</span>
+                <span style="font-size:0.8rem;color:var(--text-white);flex:1;">Checkout</span>
+                <span style="font-size:0.65rem;color:var(--accent-light);font-family:'Fira Code',monospace;">running...</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.01);border:1px solid var(--border);border-radius:6px;padding:8px 12px;opacity:0.5;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--text-muted);flex-shrink:0;"></span>
+                <span style="font-size:0.68rem;padding:2px 6px;border-radius:3px;color:var(--purple);background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);font-family:'Fira Code',monospace;font-weight:500;">GET</span>
+                <span style="font-size:0.8rem;color:var(--text-muted);flex:1;">Verify DB</span>
+                <span style="font-size:0.65rem;color:var(--text-muted);font-family:'Fira Code',monospace;">waiting</span>
+              </div>
+            </div>
+            <!-- Progress bar -->
+            <div style="margin-top:12px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+              <div style="width:70%;height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:2px;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <span style="font-size:0.68rem;color:var(--text-muted);">3 of 5 steps complete</span>
+              <span style="font-size:0.68rem;color:var(--green);">&#9679; Live</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Stats ════════════ -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="reveal">
+          <div class="stat-number">9</div>
+          <div class="stat-label">Infrastructure Connectors</div>
+        </div>
+        <div class="reveal reveal-delay-1">
+          <div class="stat-number">5</div>
+          <div class="stat-label">HTTP Methods Supported</div>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <div class="stat-number">4</div>
+          <div class="stat-label">Validation Types</div>
+        </div>
+        <div class="reveal reveal-delay-3">
+          <div class="stat-number">&#8734;</div>
+          <div class="stat-label">Step Dependencies</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ Core Features ════════════ -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="reveal" style="text-align: center;">
+        <span class="section-label">// capabilities</span>
+        <h2>Everything you need for<br/>enterprise API testing</h2>
+        <p class="section-desc" style="margin: 16px auto 0;">
+          A complete orchestration platform that goes beyond simple request-response testing.
+        </p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal" style="--card-accent: var(--accent);">
+          <div class="feature-icon" style="background: rgba(59,130,246,0.1); color: var(--accent-light);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <h3>HTTP API Testing</h3>
+          <p>Full support for GET, POST, PUT, DELETE, PATCH with headers, query params, request bodies, and curl import.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-1" style="--card-accent: var(--cyan);">
+          <div class="feature-icon" style="background: rgba(6,182,212,0.1); color: var(--cyan);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+          </div>
+          <h3>Step Dependencies</h3>
+          <p>DAG-based dependency resolution with intelligent caching, TTL management, and automatic execution ordering.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-2" style="--card-accent: var(--green);">
+          <div class="feature-icon" style="background: rgba(16,185,129,0.1); color: var(--green);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3>Response Validation</h3>
+          <p>Validate headers, exact body matches, field-level assertions, and data type checks across 10+ operators.</p>
+        </div>
+        <div class="feature-card reveal" style="--card-accent: var(--purple);">
+          <div class="feature-icon" style="background: rgba(139,92,246,0.1); color: var(--purple);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <h3>Infrastructure Verification</h3>
+          <p>Verify database state, message queues, and caches after API execution with 9 built-in connectors.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-1" style="--card-accent: var(--orange);">
+          <div class="feature-icon" style="background: rgba(245,158,11,0.1); color: var(--orange);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3>Cron Scheduling</h3>
+          <p>Schedule recurring test runs with cron expressions. Non-interactive execution with sensible defaults.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-2" style="--card-accent: var(--rose);">
+          <div class="feature-icon" style="background: rgba(244,63,94,0.1); color: var(--rose);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <h3>Variable Extraction</h3>
+          <p>Extract values from responses via JSON path, inject them into subsequent steps with <code>${VAR}</code> and <code>{{step.path}}</code> syntax.</p>
+        </div>
+        <div class="feature-card reveal" style="--card-accent: var(--accent);">
+          <div class="feature-icon" style="background: rgba(59,130,246,0.1); color: var(--accent-light);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          </div>
+          <h3>Live Streaming</h3>
+          <p>Watch test execution in real-time via Server-Sent Events. See each step pass, fail, or require input as it happens.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-1" style="--card-accent: var(--green);">
+          <div class="feature-icon" style="background: rgba(16,185,129,0.1); color: var(--green);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <h3>Response Handlers</h3>
+          <p>Configure per-status-code actions: SUCCESS, ERROR, FIRE_SIDE_EFFECT, RETRY — with automatic retry logic.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-2" style="--card-accent: var(--cyan);">
+          <div class="feature-icon" style="background: rgba(6,182,212,0.1); color: var(--cyan);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <h3>Environment Management</h3>
+          <p>Variables with secrets, default headers, file uploads, and infrastructure connectors — all managed per environment.</p>
+        </div>
+        <div class="feature-card reveal" style="--card-accent: var(--purple);">
+          <div class="feature-icon" style="background: rgba(139,92,246,0.1); color: var(--purple);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Mock Server</h3>
+          <p>Create mock API endpoints with configurable responses, path matching, match rules, and request logging — all standalone.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-1" style="--card-accent: var(--orange);">
+          <div class="feature-icon" style="background: rgba(245,158,11,0.1); color: var(--orange);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <h3>Webhook Tester</h3>
+          <p>Receive and inspect incoming HTTP requests in real-time via SSE. Supports binary, multipart, file preview and download.</p>
+        </div>
+        <div class="feature-card reveal reveal-delay-2" style="--card-accent: var(--rose);">
+          <div class="feature-icon" style="background: rgba(244,63,94,0.1); color: var(--rose);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <h3>Response Validation</h3>
+          <p>Validate response headers, body fields, exact/flexible/structural JSON matching, and data types per step.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ API Testing Deep Dive ════════════ -->
+  <section class="section section--dark" id="testing">
+    <div class="container">
+      <div class="deep-dive reveal">
+        <div class="deep-dive-content">
+          <span class="section-label">// api testing</span>
+          <h2>Intuitive tabbed editor,<br/>orchestrator-grade power</h2>
+          <p>
+            Build API test steps with a familiar tabbed interface. Import from curl, configure headers,
+            query parameters, and request bodies across all HTTP methods. Each step is a composable
+            building block in your test suite.
+          </p>
+          <div class="method-badges">
+            <span class="method-badge method-badge--get">GET</span>
+            <span class="method-badge method-badge--post">POST</span>
+            <span class="method-badge method-badge--put">PUT</span>
+            <span class="method-badge method-badge--delete">DELETE</span>
+            <span class="method-badge method-badge--patch">PATCH</span>
+          </div>
+          <ul class="feature-list" style="margin-top: 24px;">
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Tabbed editor with Headers, Params, Body, Dependencies, Handlers, Variables, and Verifications</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Curl import — paste a curl command and auto-populate all fields</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Default environment headers with per-step override capability</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Dynamic placeholders: <code style="color:var(--orange);font-size:0.82rem;">${VAR}</code> for environment, <code style="color:var(--cyan);font-size:0.82rem;">{{step.path}}</code> for step data, <code style="color:var(--purple);font-size:0.82rem;">#{name}</code> for manual input</span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <div style="font-family:'Fira Code',monospace; font-size: 0.78rem; line-height: 2;">
+            <div style="display:flex;gap:16px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+              <span style="color:var(--accent-light);border-bottom:2px solid var(--accent);padding-bottom:10px;">Headers</span>
+              <span style="color:var(--text-muted);">Params</span>
+              <span style="color:var(--text-muted);">Body</span>
+              <span style="color:var(--text-muted);">Deps</span>
+              <span style="color:var(--text-muted);">Handlers</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+              <span class="method-badge method-badge--post" style="font-size:0.7rem;">POST</span>
+              <span style="color:var(--text-white);">${baseUrl}/api/v1/checkout</span>
+            </div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:6px;padding:12px;margin-top:8px;">
+              <div style="display:flex;justify-content:space-between;color:var(--text-muted);font-size:0.72rem;margin-bottom:8px;">
+                <span>KEY</span><span>VALUE</span>
+              </div>
+              <div style="color:var(--text-gray);margin-bottom:4px;">
+                <span style="color:var(--text-white);">Authorization</span>
+                <span style="float:right;color:var(--cyan);">Bearer {{auth.token}}</span>
+              </div>
+              <div style="color:var(--text-gray);margin-bottom:4px;">
+                <span style="color:var(--text-white);">Content-Type</span>
+                <span style="float:right;color:var(--green);">application/json</span>
+              </div>
+              <div style="color:var(--text-gray);">
+                <span style="color:var(--text-white);">X-Request-Id</span>
+                <span style="float:right;color:var(--orange);">${requestId}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Dependencies Deep Dive ════════════ -->
+  <section class="section" id="dependencies">
+    <div class="container">
+      <div class="deep-dive reverse reveal">
+        <div class="deep-dive-content">
+          <span class="section-label">// orchestration</span>
+          <h2>Intelligent dependency<br/>resolution engine</h2>
+          <p>
+            Chain API steps into complex workflows using a DAG-based execution engine.
+            Steps automatically resolve in the correct order, with built-in caching
+            to avoid redundant calls and TTL management for freshness guarantees.
+          </p>
+          <ul class="feature-list" style="margin-top: 24px;">
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Directed Acyclic Graph (DAG) resolution — steps execute in topological order</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Per-step caching with configurable TTL — avoid redundant API calls within a run</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Dependency-only steps — execute only when needed by other steps, skipped in suite runs</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Manual input reuse across dependent steps via <code style="color:var(--purple);font-size:0.82rem;">#{name}</code> placeholder sharing</span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <div class="dag-visual">
+            <div class="dag-node dag-node--done">
+              <div class="node-status"></div>
+              <span class="node-name">1. Auth Token</span>
+              <span style="margin-left:auto;font-size:0.72rem;color:var(--green);">142ms &#10003;</span>
+            </div>
+            <div class="dag-arrow">&#8595; depends on</div>
+            <div class="dag-node dag-node--done">
+              <div class="node-status"></div>
+              <span class="node-name">2. Get Products</span>
+              <span style="margin-left:auto;font-size:0.72rem;color:var(--green);">89ms &#10003;</span>
+            </div>
+            <div class="dag-arrow">&#8595; depends on 1 &amp; 2</div>
+            <div class="dag-node dag-node--running dag-node--active">
+              <div class="node-status"></div>
+              <span class="node-name">3. Add to Cart</span>
+              <span style="margin-left:auto;font-size:0.72rem;color:var(--accent-light);">running...</span>
+            </div>
+            <div class="dag-arrow">&#8595; depends on 3</div>
+            <div class="dag-node dag-node--pending">
+              <div class="node-status"></div>
+              <span class="node-name">4. Checkout</span>
+              <span style="margin-left:auto;font-size:0.72rem;color:var(--text-muted);">waiting</span>
+            </div>
+            <div class="dag-arrow">&#8595; depends on 4</div>
+            <div class="dag-node dag-node--pending">
+              <div class="node-status"></div>
+              <span class="node-name">5. Verify Order DB</span>
+              <span style="margin-left:auto;font-size:0.72rem;color:var(--text-muted);">waiting</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Response Validation ════════════ -->
+  <section class="section section--dark" id="validation">
+    <div class="container">
+      <div class="deep-dive reveal">
+        <div class="deep-dive-content">
+          <span class="section-label">// validation</span>
+          <h2>Multi-layered response<br/>validation system</h2>
+          <p>
+            Go beyond status code checks. Validate headers, match entire response bodies,
+            assert specific field values, and verify data types — all with flexible matching
+            modes that adapt to your testing needs.
+          </p>
+          <ul class="feature-list" style="margin-top: 24px;">
+            <li>
+              <span class="check">&#10003;</span>
+              <span>10+ assertion operators: equals, contains, regex, greater than, less than, exists, and more</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>Three match modes: <strong style="color:var(--text-white);">Strict</strong> (exact), <strong style="color:var(--text-white);">Flexible</strong> (subset), <strong style="color:var(--text-white);">Structure</strong> (shape only)</span>
+            </li>
+            <li>
+              <span class="check">&#10003;</span>
+              <span>JSON path support for deep field access: <code style="color:var(--cyan);font-size:0.82rem;">$.data.orders[0].total</code></span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <div class="validation-cards">
+            <div class="validation-card">
+              <h4 style="color: var(--cyan);">Header Validation</h4>
+              <p>Assert response headers match expected values — content types, cache controls, auth tokens.</p>
+            </div>
+            <div class="validation-card">
+              <h4 style="color: var(--green);">Body Exact Match</h4>
+              <p>Compare the entire response body against an expected payload with strict, flexible, or structure matching.</p>
+            </div>
+            <div class="validation-card">
+              <h4 style="color: var(--orange);">Body Field Assert</h4>
+              <p>Target specific fields via JSON path and apply assertion operators — equals, contains, regex, numeric comparisons.</p>
+            </div>
+            <div class="validation-card">
+              <h4 style="color: var(--purple);">Body Data Type</h4>
+              <p>Verify field types are STRING, NUMBER, BOOLEAN, ARRAY, OBJECT, or NULL at any JSON path.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Infrastructure Verification ════════════ -->
+  <section class="section" id="infra">
+    <div class="container">
+      <div class="reveal" style="text-align: center;">
+        <span class="section-label">// infrastructure</span>
+        <h2>Verify the entire stack,<br/>not just the API</h2>
+        <p class="section-desc" style="margin: 16px auto 0;">
+          After an API call, verify that the right data landed in the right place.
+          Connect to databases, message queues, and caches to run post-execution assertions.
+        </p>
+      </div>
+      <div class="connector-grid reveal" style="margin-top: 48px; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(59,130,246,0.1); color: var(--accent-light);">PG</div>
+          <span>PostgreSQL</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(245,158,11,0.1); color: var(--orange);">MY</div>
+          <span>MySQL</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(239,68,68,0.1); color: var(--red);">OR</div>
+          <span>Oracle</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(139,92,246,0.1); color: var(--purple);">MS</div>
+          <span>SQL Server</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(244,63,94,0.1); color: var(--rose);">RD</div>
+          <span>Redis</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(6,182,212,0.1); color: var(--cyan);">ES</div>
+          <span>Elasticsearch</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(16,185,129,0.1); color: var(--green);">KF</div>
+          <span>Kafka</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(245,158,11,0.1); color: var(--orange);">RB</div>
+          <span>RabbitMQ</span>
+        </div>
+        <div class="connector-chip">
+          <div class="icon" style="background: rgba(16,185,129,0.1); color: var(--green);">MG</div>
+          <span>MongoDB</span>
+        </div>
+      </div>
+      <div class="reveal" style="margin-top: 48px; max-width: 700px; margin-left: auto; margin-right: auto;">
+        <div style="background: var(--bg-dark-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.4);">
+          <!-- Panel header -->
+          <div style="padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              <span style="font-family:'Syne',sans-serif;font-size:0.85rem;color:var(--text-white);font-weight:600;">Verification Results</span>
+            </div>
+            <span style="font-size:0.68rem;padding:3px 10px;border-radius:4px;background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.25);font-weight:600;">4/4 PASSED</span>
+          </div>
+          <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;">
+            <!-- PostgreSQL verification -->
+            <div style="border:1px solid var(--border);border-left:3px solid var(--accent-light);border-radius:6px;padding:12px 16px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:0.65rem;padding:2px 6px;border-radius:3px;background:rgba(59,130,246,0.1);color:var(--accent-light);border:1px solid rgba(59,130,246,0.2);font-family:'Fira Code',monospace;font-weight:600;">PG</span>
+                <span style="font-size:0.82rem;color:var(--text-white);font-weight:500;">Check order record exists</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;padding-left:4px;">
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;">
+                  <span style="color:var(--green);">&#10003;</span>
+                  <span style="color:var(--text-muted);font-family:'Fira Code',monospace;font-size:0.72rem;">$.rowCount</span>
+                  <span style="color:var(--text-muted);">EQUALS</span>
+                  <span style="color:var(--green);font-family:'Fira Code',monospace;font-size:0.72rem;">1</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;">
+                  <span style="color:var(--green);">&#10003;</span>
+                  <span style="color:var(--text-muted);font-family:'Fira Code',monospace;font-size:0.72rem;">$.rows[0].status</span>
+                  <span style="color:var(--text-muted);">EQUALS</span>
+                  <span style="color:var(--green);font-family:'Fira Code',monospace;font-size:0.72rem;">"confirmed"</span>
+                </div>
+              </div>
+            </div>
+            <!-- Kafka verification -->
+            <div style="border:1px solid var(--border);border-left:3px solid var(--green);border-radius:6px;padding:12px 16px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:0.65rem;padding:2px 6px;border-radius:3px;background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.2);font-family:'Fira Code',monospace;font-weight:600;">KF</span>
+                <span style="font-size:0.82rem;color:var(--text-white);font-weight:500;">Verify event published</span>
+                <span style="font-size:0.62rem;padding:1px 6px;border-radius:3px;background:rgba(139,92,246,0.1);color:var(--purple);border:1px solid rgba(139,92,246,0.2);margin-left:auto;">pre-listen</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px;padding-left:4px;">
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;">
+                  <span style="color:var(--green);">&#10003;</span>
+                  <span style="color:var(--text-muted);font-family:'Fira Code',monospace;font-size:0.72rem;">$.value.eventType</span>
+                  <span style="color:var(--text-muted);">CONTAINS</span>
+                  <span style="color:var(--green);font-family:'Fira Code',monospace;font-size:0.72rem;">"ORDER_CREATED"</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.78rem;">
+                  <span style="color:var(--green);">&#10003;</span>
+                  <span style="color:var(--text-muted);font-family:'Fira Code',monospace;font-size:0.72rem;">$.value.orderId</span>
+                  <span style="color:var(--text-muted);">EXISTS</span>
+                  <span style="color:var(--green);">&#10003;</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ How It Works ════════════ -->
+  <section class="section section--dark" id="how-it-works">
+    <div class="container">
+      <div class="reveal" style="text-align: center;">
+        <span class="section-label">// workflow</span>
+        <h2>From setup to execution<br/>in four steps</h2>
+      </div>
+      <div class="steps-flow">
+        <div class="step-item reveal">
+          <div class="step-number" style="background: rgba(59,130,246,0.1); border: 2px solid rgba(59,130,246,0.3);">
+            <span style="color: var(--accent-light);">1</span>
+          </div>
+          <h3>Configure Environment</h3>
+          <p>Set base URLs, variables, secrets, default headers, and infrastructure connectors for each environment.</p>
+        </div>
+        <div class="step-item reveal reveal-delay-1">
+          <div class="step-number" style="background: rgba(6,182,212,0.1); border: 2px solid rgba(6,182,212,0.3);">
+            <span style="color: var(--cyan);">2</span>
+          </div>
+          <h3>Build Test Suite</h3>
+          <p>Create steps with the tabbed editor. Import from curl, define dependencies, add handlers and validations.</p>
+        </div>
+        <div class="step-item reveal reveal-delay-2">
+          <div class="step-number" style="background: rgba(139,92,246,0.1); border: 2px solid rgba(139,92,246,0.3);">
+            <span style="color: var(--purple);">3</span>
+          </div>
+          <h3>Execute & Stream</h3>
+          <p>Run individual steps or full suites. Watch results stream in real-time via SSE with live status updates.</p>
+        </div>
+        <div class="step-item reveal reveal-delay-3">
+          <div class="step-number" style="background: rgba(16,185,129,0.1); border: 2px solid rgba(16,185,129,0.3);">
+            <span style="color: var(--green);">4</span>
+          </div>
+          <h3>Schedule & Monitor</h3>
+          <p>Set up cron schedules for automated runs. Monitor pass rates, review history, and export results.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Tech Stack ════════════ -->
+  <section class="section">
+    <div class="container">
+      <div class="reveal" style="text-align: center;">
+        <span class="section-label">// technology</span>
+        <h2>Built on proven,<br/>battle-tested tech</h2>
+        <p class="section-desc" style="margin: 16px auto 0;">
+          Modern stack, zero vendor lock-in. Deploy on your own infrastructure with full control.
+        </p>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-card reveal">
+          <span class="tech-icon" aria-label="Java">&#9749;</span>
+          <h4>Java 21</h4>
+          <p>Spring Boot 3.3.7</p>
+        </div>
+        <div class="tech-card reveal reveal-delay-1">
+          <span class="tech-icon" aria-label="React">&#9883;</span>
+          <h4>React 19</h4>
+          <p>TypeScript + Vite</p>
+        </div>
+        <div class="tech-card reveal reveal-delay-2">
+          <span class="tech-icon" aria-label="PostgreSQL">&#128024;</span>
+          <h4>PostgreSQL</h4>
+          <p>Flyway Migrations</p>
+        </div>
+        <div class="tech-card reveal reveal-delay-3">
+          <span class="tech-icon" aria-label="Docker">&#128299;</span>
+          <h4>Docker</h4>
+          <p>Single Image Deploy</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Documentation / Getting Started ════════════ -->
+  <section class="section section--dark" id="docs">
+    <div class="container">
+      <div class="reveal" style="text-align: center;">
+        <span class="section-label">// documentation</span>
+        <h2>Comprehensive docs to<br/>get you running fast</h2>
+      </div>
+
+      <div class="features-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 48px;">
+        <div class="feature-card reveal" style="--card-accent: var(--accent);">
+          <h3 style="margin-bottom: 12px;">Environment Setup</h3>
+          <ul class="feature-list" style="gap: 10px;">
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Create environments with base URLs</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Add variables (static, UUID, timestamp)</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Configure default headers</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Set up infrastructure connectors</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Import/export as JSON</span></li>
+          </ul>
+        </div>
+        <div class="feature-card reveal reveal-delay-1" style="--card-accent: var(--cyan);">
+          <h3 style="margin-bottom: 12px;">Test Suite Builder</h3>
+          <ul class="feature-list" style="gap: 10px;">
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Create steps with all HTTP methods</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Import from curl commands</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Define step dependencies (DAG)</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Configure response handlers</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Add response validations</span></li>
+          </ul>
+        </div>
+        <div class="feature-card reveal reveal-delay-2" style="--card-accent: var(--green);">
+          <h3 style="margin-bottom: 12px;">Execution & Results</h3>
+          <ul class="feature-list" style="gap: 10px;">
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Run single steps or full suites</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Stream results in real-time (SSE)</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Schedule cron-based automated runs</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Review run history with filters</span></li>
+            <li><span class="check" style="width:16px;height:16px;font-size:0.55rem;">&#10003;</span><span>Export results as JSON</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="reveal" style="text-align: center; margin-top: 40px;">
+        <a href="docs.html" target="_blank" class="btn btn-outline" style="display: inline-flex;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Read Full Documentation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Getting Started Code ════════════ -->
+  <section class="section" id="get-started">
+    <div class="container">
+      <div class="reveal" style="text-align: center;">
+        <span class="section-label">// quick start</span>
+        <h2>Up and running in minutes</h2>
+        <p class="section-desc" style="margin: 16px auto 0;">
+          Clone, configure, and launch. OrchestAPI ships as a single Docker image
+          with PostgreSQL as the only dependency.
+        </p>
+      </div>
+      <div class="getting-started-code reveal" style="max-width: 720px; margin: 0 auto;">
+        <div class="code-tabs">
+          <button class="code-tab active">Docker</button>
+          <button class="code-tab">Manual</button>
+        </div>
+        <div class="code-block" id="codeDocker">
+          <span class="comment"># 1. Pull the image</span><br/>
+          <span class="keyword">docker</span> pull <span class="string">santhoshkumr96/orchestapi:latest</span><br/><br/>
+          <span class="comment"># 2. Start with PostgreSQL</span><br/>
+          <span class="keyword">docker</span> run <span class="flag">-d</span> \<br/>
+          &nbsp;&nbsp;<span class="flag">--name</span> orchestapi \<br/>
+          &nbsp;&nbsp;<span class="flag">-p</span> <span class="var">8080</span>:8080 \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">DB_HOST</span>=<span class="string">your-postgres-host</span> \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">DB_NAME</span>=<span class="string">orchestapi</span> \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">DB_USER</span>=<span class="string">your-user</span> \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">DB_PASS</span>=<span class="string">your-password</span> \<br/>
+          &nbsp;&nbsp;santhoshkumr96/orchestapi:latest<br/><br/>
+          <span class="comment"># 3. Open http://localhost:8080</span>
+        </div>
+        <div class="code-block" id="codeManual" style="display:none;">
+          <span class="comment"># 1. Clone the repository</span><br/>
+          <span class="keyword">git</span> clone <span class="string">https://github.com/santhoshkumr96/orchestapi.git</span><br/>
+          <span class="keyword">cd</span> orchestapi<br/><br/>
+          <span class="comment"># 2. Start PostgreSQL (Docker)</span><br/>
+          <span class="keyword">docker</span> run <span class="flag">-d</span> <span class="flag">--name</span> orchestapi-db \<br/>
+          &nbsp;&nbsp;<span class="flag">-p</span> <span class="var">5432</span>:5432 \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">POSTGRES_DB</span>=<span class="string">orchestapi</span> \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">POSTGRES_USER</span>=<span class="string">orchestapi</span> \<br/>
+          &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">POSTGRES_PASSWORD</span>=<span class="string">secret</span> \<br/>
+          &nbsp;&nbsp;postgres:17<br/><br/>
+          <span class="comment"># 3. Start backend (Java 21 required)</span><br/>
+          <span class="keyword">cd</span> backend && <span class="keyword">./mvnw</span> spring-boot:run<br/><br/>
+          <span class="comment"># 4. Start frontend (Node.js required)</span><br/>
+          <span class="keyword">cd</span> frontend && <span class="keyword">npm</span> install && <span class="keyword">npm</span> run dev
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ CTA ════════════ -->
+  <section class="cta-section">
+    <div class="container">
+      <span class="section-label reveal">// get started</span>
+      <h2 class="reveal" style="font-size: clamp(2rem, 4vw, 3rem);">
+        Ready to orchestrate<br/>your API tests?
+      </h2>
+      <p class="section-desc reveal" style="margin: 16px auto 0; text-align: center;">
+        Deploy OrchestAPI on your infrastructure and take control of your API testing workflow.
+      </p>
+      <div class="hero-actions reveal" style="margin-top: 32px; justify-content: center; opacity: 1;">
+        <a href="#get-started" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Deploy Now
+        </a>
+        <a href="https://github.com/santhoshkumr96/orchestapi" class="btn btn-outline" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ Footer ════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-logo">OrchestAPI</div>
+      <p>Self-hosted API test orchestration platform</p>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="docs.html" target="_blank">Documentation</a>
+        <a href="#get-started">Quick Start</a>
+        <a href="https://github.com/santhoshkumr96/orchestapi" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <p style="margin-top: 32px; font-size: 0.75rem;">&copy; 2026 OrchestAPI. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ════════════ Scripts ════════════ -->
+  <script>
+    // Scroll reveal
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+    // Nav scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Mobile menu toggle
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+
+    // Code tabs
+    const tabs = document.querySelectorAll('.code-tab');
+    const dockerBlock = document.getElementById('codeDocker');
+    const manualBlock = document.getElementById('codeManual');
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        dockerBlock.style.display = i === 0 ? 'block' : 'none';
+        manualBlock.style.display = i === 1 ? 'block' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

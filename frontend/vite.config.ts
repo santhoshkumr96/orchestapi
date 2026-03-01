@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: process.env.VITE_BASE_PATH || '/',
   plugins: [react()],
   server: {
     port: 3000,
@@ -13,13 +14,13 @@ export default defineConfig({
         // Disable buffering for SSE streaming endpoints
         configure: (proxy) => {
           proxy.on('proxyReq', (_proxyReq, req) => {
-            if (req.url?.includes('/run/stream')) {
+            if (req.url?.includes('/run/stream') || req.url?.includes('/requests/stream')) {
               _proxyReq.setHeader('Cache-Control', 'no-cache')
               _proxyReq.setHeader('Connection', 'keep-alive')
             }
           })
           proxy.on('proxyRes', (proxyRes, req) => {
-            if (req.url?.includes('/run/stream')) {
+            if (req.url?.includes('/run/stream') || req.url?.includes('/requests/stream')) {
               proxyRes.headers['cache-control'] = 'no-cache'
               proxyRes.headers['x-accel-buffering'] = 'no'
             }
@@ -27,6 +28,14 @@ export default defineConfig({
         },
       },
       '/actuator': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/mock': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/webhook': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
