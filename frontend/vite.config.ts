@@ -1,13 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const basePath = (process.env.VITE_BASE_PATH || '').replace(/\/$/, '')
+
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [react()],
   server: {
     port: 3000,
     proxy: {
-      '/api': {
+      [`${basePath}/api`]: {
         target: 'http://localhost:8080',
         changeOrigin: true,
         timeout: 3_600_000, // 60 min for long-running SSE streams
@@ -27,15 +29,15 @@ export default defineConfig({
           })
         },
       },
-      '/actuator': {
+      [`${basePath}/actuator`]: {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '/mock': {
+      [`${basePath}/mock`]: {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '/webhook': {
+      [`${basePath}/webhook`]: {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },

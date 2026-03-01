@@ -13,6 +13,7 @@ import {
   message,
   Spin,
   Modal,
+  Segmented,
 } from 'antd'
 import {
   ArrowLeftOutlined,
@@ -28,6 +29,8 @@ import {
   ClockCircleOutlined,
   HolderOutlined,
   SearchOutlined,
+  ApartmentOutlined,
+  UnorderedListOutlined,
 } from '@ant-design/icons'
 import type { TestStep, TestStepRequest, HttpMethodType } from '../types/testSuite'
 import { testSuiteApi, testStepApi } from '../services/testSuiteApi'
@@ -39,6 +42,7 @@ import StepEditor from '../components/StepEditor'
 import RunResultsPanel from '../components/RunResultsPanel'
 import ImportStepModal from '../components/ImportStepModal'
 import ManualInputModal from '../components/ManualInputModal'
+import DagView from '../components/DagView'
 
 const { Title } = Typography
 
@@ -83,6 +87,7 @@ export default function TestSuiteDetailPage() {
   const [environments, setEnvironments] = useState<{ label: string; value: string }[]>([])
   const [expandedStepIds, setExpandedStepIds] = useState<Set<string>>(new Set())
   const [stepSearch, setStepSearch] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'dag'>('list')
   const [draggedStepId, setDraggedStepId] = useState<string | null>(null)
   const [dragOverStepId, setDragOverStepId] = useState<string | null>(null)
   const [suiteName, setSuiteName] = useState('')
@@ -441,10 +446,12 @@ export default function TestSuiteDetailPage() {
     // Start with an empty result so the panel appears immediately
     setRunResult({ status: 'RUNNING', steps: [], totalDurationMs: 0 })
 
-    // Scroll down to results panel after React renders it
-    setTimeout(() => {
-      runResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
+    // Scroll down to results panel after React renders it (skip in DAG view so user can watch live node updates)
+    if (viewMode !== 'dag') {
+      setTimeout(() => {
+        runResultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 50)
+    }
 
     // Close any previous stream
     closeStreamRef.current?.()
@@ -617,15 +624,27 @@ export default function TestSuiteDetailPage() {
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>Steps</span>
-              <Input
-                placeholder="Search steps..."
+              <Segmented
                 size="small"
-                allowClear
-                value={stepSearch}
-                onChange={e => setStepSearch(e.target.value)}
-                style={{ width: 180, fontWeight: 'normal' }}
-                prefix={<SearchOutlined style={{ color: '#bbb' }} />}
+                value={viewMode}
+                onChange={v => setViewMode(v as 'list' | 'dag')}
+                options={[
+                  { value: 'list', icon: <UnorderedListOutlined /> },
+                  { value: 'dag', icon: <ApartmentOutlined /> },
+                ]}
+                style={{ fontWeight: 'normal' }}
               />
+              {viewMode === 'list' && (
+                <Input
+                  placeholder="Search steps..."
+                  size="small"
+                  allowClear
+                  value={stepSearch}
+                  onChange={e => setStepSearch(e.target.value)}
+                  style={{ width: 180, fontWeight: 'normal' }}
+                  prefix={<SearchOutlined style={{ color: '#bbb' }} />}
+                />
+              )}
             </div>
           }
           extra={
@@ -649,7 +668,9 @@ export default function TestSuiteDetailPage() {
             </Space>
           }
         >
-          {steps.length === 0 && !expandedStepIds.has('_new') ? (
+          {viewMode === 'dag' ? (
+            <DagView steps={steps} runResult={runResult} running={running} onEditStep={(stepId) => { setViewMode('list'); setExpandedStepIds(new Set([stepId])); setTimeout(() => document.getElementById(`step-${stepId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) }} />
+          ) : steps.length === 0 && !expandedStepIds.has('_new') ? (
             <div style={{ textAlign: 'center', color: '#999', padding: 24 }}>
               No steps yet. Click &quot;Add Step&quot; to create one.
             </div>
@@ -667,6 +688,7 @@ export default function TestSuiteDetailPage() {
                     return (
                       <Card
                         key={step.id}
+                        id={`step-${step.id}`}
                         size="small"
                         hoverable
                         draggable
@@ -846,9 +868,9 @@ export default function TestSuiteDetailPage() {
         </Card>
       )}
 
-      {/* Run results */}
+      {/* Run results — hidden during streaming in DAG view so user can watch live node updates */}
       <div ref={runResultsRef}>
-        {runResult && (
+        {runResult && !(viewMode === 'dag' && running) && (
           <RunResultsPanel result={runResult} allSteps={steps} targetStepId={runTarget} onClose={() => setRunResult(null)} />
         )}
       </div>
