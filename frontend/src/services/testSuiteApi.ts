@@ -70,6 +70,84 @@ export interface SuiteExecutionResult {
 const SUITES_BASE = '/api/test-suites'
 const _basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
 
+export async function exportSuite(suiteId: string) {
+  const suite = await testSuiteApi.get(suiteId)
+  const steps = await testStepApi.list(suiteId)
+
+  const idToName = new Map(steps.map((s) => [s.id, s.name]))
+
+  const exportSteps = steps.map((s) => ({
+    name: s.name,
+    method: s.method,
+    url: s.url,
+    groupName: s.groupName,
+    sortOrder: s.sortOrder,
+    headers: s.headers,
+    queryParams: s.queryParams,
+    bodyType: s.bodyType,
+    body: s.body,
+    formDataFields: s.formDataFields,
+    cacheable: s.cacheable,
+    cacheTtlSeconds: s.cacheTtlSeconds,
+    dependencyOnly: s.dependencyOnly,
+    disabledDefaultHeaders: s.disabledDefaultHeaders,
+    dependencies: s.dependencies.map((d) => ({
+      dependsOnStepName: idToName.get(d.dependsOnStepId) || d.dependsOnStepId,
+      useCache: d.useCache,
+      reuseManualInput: d.reuseManualInput,
+    })),
+    responseHandlers: s.responseHandlers.map((h) => ({
+      matchCode: h.matchCode,
+      action: h.action,
+      sideEffectStepName: h.sideEffectStepId ? idToName.get(h.sideEffectStepId) || null : null,
+      retryCount: h.retryCount,
+      retryDelaySeconds: h.retryDelaySeconds,
+      priority: h.priority,
+    })),
+    extractVariables: s.extractVariables.map((v) => ({
+      variableName: v.variableName,
+      jsonPath: v.jsonPath,
+      source: v.source,
+    })),
+    verifications: s.verifications.map((v) => ({
+      connectorName: v.connectorName,
+      query: v.query,
+      timeoutSeconds: v.timeoutSeconds,
+      queryTimeoutSeconds: v.queryTimeoutSeconds,
+      preListen: v.preListen,
+      assertions: v.assertions.map((a) => ({
+        jsonPath: a.jsonPath,
+        operator: a.operator,
+        expectedValue: a.expectedValue,
+      })),
+    })),
+    responseValidations: s.responseValidations.map((rv) => ({
+      validationType: rv.validationType,
+      headerName: rv.headerName,
+      jsonPath: rv.jsonPath,
+      operator: rv.operator,
+      expectedValue: rv.expectedValue,
+      expectedBody: rv.expectedBody,
+      matchMode: rv.matchMode,
+      expectedType: rv.expectedType,
+    })),
+  }))
+
+  const payload = {
+    name: suite.name,
+    description: suite.description,
+    steps: exportSteps,
+  }
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${suite.name.toLowerCase().replace(/\s+/g, '-')}-suite.json`
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 100)
+}
+
 export const testSuiteApi = {
   list: (params: TestSuiteListParams = {}) =>
     axios
@@ -86,6 +164,9 @@ export const testSuiteApi = {
     axios.put<TestSuite>(`${SUITES_BASE}/${id}`, data).then((r) => r.data),
 
   delete: (id: string) => axios.delete(`${SUITES_BASE}/${id}`),
+
+  importSuite: (data: unknown) =>
+    axios.post<TestSuite>(SUITES_BASE + '/import', data).then((r) => r.data),
 
   run: (suiteId: string, environmentId?: string) =>
     axios

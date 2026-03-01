@@ -669,7 +669,7 @@ export default function TestSuiteDetailPage() {
           }
         >
           {viewMode === 'dag' ? (
-            <DagView steps={steps} runResult={runResult} running={running} onEditStep={(stepId) => { setViewMode('list'); setExpandedStepIds(new Set([stepId])); setTimeout(() => document.getElementById(`step-${stepId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) }} />
+            <DagView steps={steps} runResult={runResult} running={running} onRunStep={(stepId) => openRunModal(stepId)} onEditStep={(stepId) => { setViewMode('list'); setExpandedStepIds(new Set([stepId])); setTimeout(() => document.getElementById(`step-${stepId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50) }} />
           ) : steps.length === 0 && !expandedStepIds.has('_new') ? (
             <div style={{ textAlign: 'center', color: '#999', padding: 24 }}>
               No steps yet. Click &quot;Add Step&quot; to create one.

@@ -181,9 +181,10 @@ interface Props {
   runResult: SuiteExecutionResult | null
   running: boolean
   onEditStep?: (stepId: string) => void
+  onRunStep?: (stepId: string) => void
 }
 
-function DagViewInner({ steps, runResult, running, onEditStep }: Props) {
+function DagViewInner({ steps, runResult, running, onEditStep, onRunStep }: Props) {
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null)
   const [dagMode, setDagMode] = useState<DagMode>('expanded')
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
@@ -640,8 +641,10 @@ function DagViewInner({ steps, runResult, running, onEditStep }: Props) {
             step={selectedStep}
             result={selectedResult}
             allSteps={steps}
+            running={running}
             onClose={() => setSelectedStepId(null)}
             onEditStep={(stepId) => { setSelectedStepId(null); onEditStep?.(stepId) }}
+            onRunStep={onRunStep}
           />
         )}
       </div>

@@ -1,4 +1,4 @@
-import { CloseOutlined, EditOutlined } from '@ant-design/icons'
+import { CaretRightOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons'
 import { Button, Tag } from 'antd'
 import type { TestStep } from '../types/testSuite'
 import type { StepExecutionResult } from '../services/testSuiteApi'
@@ -23,8 +23,10 @@ interface Props {
   step: TestStep
   result?: StepExecutionResult
   allSteps: TestStep[]
+  running?: boolean
   onClose: () => void
   onEditStep: (stepId: string) => void
+  onRunStep?: (stepId: string) => void
 }
 
 const label: React.CSSProperties = {
@@ -36,7 +38,7 @@ const label: React.CSSProperties = {
   marginBottom: 2,
 }
 
-export default function DagDetailPanel({ step, result, allSteps, onClose, onEditStep }: Props) {
+export default function DagDetailPanel({ step, result, allSteps, running, onClose, onEditStep, onRunStep }: Props) {
   const stepMap = new Map(allSteps.map(s => [s.id, s]))
   const depNames = step.dependencies.map(d => stepMap.get(d.dependsOnStepId)?.name || 'Unknown')
 
@@ -70,16 +72,29 @@ export default function DagDetailPanel({ step, result, allSteps, onClose, onEdit
         </div>
       </div>
 
-      {/* Edit button */}
-      <Button
-        type="primary"
-        size="small"
-        icon={<EditOutlined />}
-        onClick={() => onEditStep(step.id)}
-        style={{ marginBottom: 12, width: '100%' }}
-      >
-        View / Edit Step
-      </Button>
+      {/* Action buttons */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+        {onRunStep && (
+          <Button
+            size="small"
+            icon={<CaretRightOutlined />}
+            onClick={() => onRunStep(step.id)}
+            disabled={running}
+            style={{ flex: 1 }}
+          >
+            Run
+          </Button>
+        )}
+        <Button
+          type="primary"
+          size="small"
+          icon={<EditOutlined />}
+          onClick={() => onEditStep(step.id)}
+          style={{ flex: 1 }}
+        >
+          View / Edit
+        </Button>
+      </div>
 
       {/* Dependencies */}
       {depNames.length > 0 && (

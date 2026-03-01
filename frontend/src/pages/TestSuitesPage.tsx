@@ -9,19 +9,23 @@ import {
   message,
   Typography,
   Tooltip,
+  Modal,
   Input,
 } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  ExportOutlined,
+  ImportOutlined,
   SearchOutlined,
+  WarningOutlined,
   CloseCircleFilled,
 } from '@ant-design/icons'
 import type { FilterDropdownProps } from 'antd/es/table/interface'
 import type { TestSuite, TestSuiteListParams } from '../types/testSuite'
 import type { PageResponse } from '../types/environment'
-import { testSuiteApi } from '../services/testSuiteApi'
+import { testSuiteApi, exportSuite } from '../services/testSuiteApi'
 
 const { Title } = Typography
 
@@ -99,6 +103,7 @@ function ColumnSearch({
 
 export default function TestSuitesPage() {
   const navigate = useNavigate()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [data, setData] = useState<PageResponse<TestSuite>>({
     content: [],
@@ -169,6 +174,75 @@ export default function TestSuitesPage() {
     setCurrentPage(1)
   }
 
+  // --- Import logic ---
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
+  const [pendingImport, setPendingImport] = useState<Record<string, unknown> | null>(null)
+
+  const doImport = async (importData: Record<string, unknown>) => {
+    try {
+      await testSuiteApi.importSuite(importData)
+      message.success(`Test suite "${importData.name}" imported`)
+      setPendingImport(null)
+      setRefreshKey((k) => k + 1)
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosErr = err as { response?: { data?: { error?: string } } }
+        const errorMsg = axiosErr.response?.data?.error ?? ''
+        if (errorMsg.toLowerCase().includes('already exists')) {
+          setPendingImport(importData)
+          setRenameValue(importData.name as string)
+          setRenameModalOpen(true)
+        } else {
+          message.error(errorMsg || 'Import failed')
+        }
+      } else {
+        message.error('Import failed')
+      }
+    }
+  }
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onerror = () => message.error('Failed to read file')
+    reader.onload = async (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string)
+        if (!parsed.name) {
+          message.error('Invalid file: missing suite name')
+          return
+        }
+        await doImport(parsed)
+      } catch (err) {
+        if (err instanceof SyntaxError) {
+          message.error('Invalid JSON file')
+        } else {
+          message.error('Import failed')
+        }
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  const handleRenameImport = async () => {
+    if (!pendingImport || !renameValue.trim()) return
+    const trimmedName = renameValue.trim()
+    setRenameModalOpen(false)
+    await doImport({ ...pendingImport, name: trimmedName })
+  }
+
+  const handleExport = async (id: string) => {
+    try {
+      await exportSuite(id)
+      message.success('Suite exported')
+    } catch {
+      message.error('Failed to export suite')
+    }
+  }
+
   const columnSearchProps = (dataIndex: string) => ({
     filterDropdown: (props: FilterDropdownProps) => (
       <ColumnSearch
@@ -224,7 +298,7 @@ export default function TestSuitesPage() {
     {
       title: 'Actions',
       key: 'actions',
-      width: 100,
+      width: 140,
       render: (_: unknown, record: TestSuite) => (
         <div onClick={(e) => e.stopPropagation()}>
           <Space>
@@ -233,6 +307,13 @@ export default function TestSuitesPage() {
                 type="text"
                 icon={<EditOutlined />}
                 onClick={() => navigate(`/test-suites/${record.id}`)}
+              />
+            </Tooltip>
+            <Tooltip title="Export">
+              <Button
+                type="text"
+                icon={<ExportOutlined />}
+                onClick={() => handleExport(record.id)}
               />
             </Tooltip>
             <Popconfirm
@@ -255,14 +336,59 @@ export default function TestSuitesPage() {
         <Title level={5} style={{ margin: 0 }}>
           Test Suites
         </Title>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate('/test-suites/new')}
-        >
-          New Suite
-        </Button>
+        <Space>
+          <Button
+            icon={<ImportOutlined />}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Import
+          </Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => navigate('/test-suites/new')}
+          >
+            New Suite
+          </Button>
+        </Space>
       </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        style={{ display: 'none' }}
+        onChange={handleImport}
+        aria-label="Import test suite JSON file"
+      />
+
+      <Modal
+        title={
+          <Space>
+            <WarningOutlined style={{ color: '#faad14' }} />
+            Name already exists
+          </Space>
+        }
+        open={renameModalOpen}
+        onOk={handleRenameImport}
+        onCancel={() => {
+          setRenameModalOpen(false)
+          setPendingImport(null)
+        }}
+        okText="Import"
+      >
+        <p>
+          A test suite named <strong>{pendingImport?.name as string}</strong> already exists.
+          Please enter a new name:
+        </p>
+        <Input
+          value={renameValue}
+          onChange={(e) => setRenameValue(e.target.value)}
+          placeholder="New suite name"
+          onPressEnter={handleRenameImport}
+          autoFocus
+        />
+      </Modal>
 
       {activeFilterEntries.length > 0 && (
         <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

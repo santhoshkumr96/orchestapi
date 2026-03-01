@@ -1,6 +1,7 @@
 package com.orchestrator.controller;
 
 import com.orchestrator.dto.PageResponse;
+import com.orchestrator.dto.TestSuiteImportRequest;
 import com.orchestrator.dto.TestSuiteRequest;
 import com.orchestrator.dto.TestSuiteResponse;
 import com.orchestrator.service.TestSuiteService;
@@ -64,5 +65,10 @@ public class TestSuiteController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<TestSuiteResponse> importSuite(@Valid @RequestBody TestSuiteImportRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.importSuite(request));
     }
 }
