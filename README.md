@@ -77,6 +77,10 @@
 - [Webhook Tester](#webhook-tester)
 - [Curl Import](#curl-import)
 - [Connector Reference](#connector-reference)
+- [Deployment](#deployment)
+  - [Docker](#docker)
+  - [Docker Compose](#docker-compose)
+  - [Context Path (Reverse Proxy / Kubernetes)](#context-path-reverse-proxy--kubernetes)
 - [Configuration](#configuration)
 - [License](#license)
 
@@ -896,6 +900,108 @@ queue=my_queue routingKey=order.created
 
 ---
 
+## Deployment
+
+### Docker
+
+Build and run as a single container:
+
+```bash
+docker build -t orchestapi .
+docker run -d \
+  --name orchestapi \
+  -p 8080:8080 \
+  -e DB_URL=jdbc:postgresql://your-host:5432/orchestapi \
+  -e DB_USERNAME=orchestapi \
+  -e DB_PASSWORD=your_password \
+  orchestapi
+```
+
+Or use the published image:
+
+```bash
+docker pull santhoshkumr96/orchestapi:latest
+```
+
+### Docker Compose
+
+```bash
+git clone https://github.com/santhoshkumr96/orchestapi.git
+cd orchestapi
+
+# Set your DB password
+echo "DB_PASSWORD=your_password" > .env
+
+docker compose up -d
+# Open http://localhost:8080
+```
+
+### Context Path (Reverse Proxy / Kubernetes)
+
+When deploying behind a reverse proxy or Kubernetes Ingress with a path prefix (e.g., `https://company.com/orchestapi`), set both environment variables to the same path:
+
+```bash
+docker run -d \
+  --name orchestapi \
+  -p 8080:8080 \
+  -e CONTEXT_PATH=/orchestapi \
+  -e DB_URL=jdbc:postgresql://db:5432/orchestapi \
+  -e DB_USERNAME=orchestapi \
+  -e DB_PASSWORD=your_password \
+  orchestapi
+```
+
+When building the Docker image, pass the base path as a build argument so the frontend assets are compiled with the correct prefix:
+
+```bash
+docker build --build-arg VITE_BASE_PATH=/orchestapi -t orchestapi .
+```
+
+**How it works:**
+
+| Layer | Variable | Effect |
+|-------|----------|--------|
+| Backend (Spring Boot) | `CONTEXT_PATH` | Sets `server.servlet.context-path` — all API routes are prefixed |
+| Frontend (Vite/React) | `VITE_BASE_PATH` | Sets Vite `base` + React Router `basename` + axios interceptor |
+| Docker | `VITE_BASE_PATH` build arg | Compiled into the frontend at build time |
+
+**Nginx reverse proxy example:**
+
+```nginx
+location /orchestapi/ {
+    proxy_pass http://orchestapi:8080/orchestapi/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+```
+
+**Kubernetes Ingress example:**
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: orchestapi
+spec:
+  rules:
+    - host: company.com
+      http:
+        paths:
+          - path: /orchestapi
+            pathType: Prefix
+            backend:
+              service:
+                name: orchestapi
+                port:
+                  number: 8080
+```
+
+For local development, both default to `/` — no configuration needed.
+
+---
+
 ## Configuration
 
 ### Server Environment Variables
@@ -903,9 +1009,11 @@ queue=my_queue routingKey=order.created
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DB_URL` | `jdbc:postgresql://localhost:5432/test` | PostgreSQL JDBC URL |
-| `DB_USERNAME` | `demographics_user` | Database username |
+| `DB_USERNAME` | *(required)* | Database username |
 | `DB_PASSWORD` | *(required)* | Database password |
 | `SERVER_PORT` | `8080` | Backend server port |
+| `CONTEXT_PATH` | `/` | Servlet context path (e.g., `/app/orchestapi`) |
+| `VITE_BASE_PATH` | `/` | Frontend base path (Docker build arg, must match `CONTEXT_PATH`) |
 
 ### Limits
 

@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation — OrchestAPI</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230a2540'/%3E%3Cstop offset='100%25' stop-color='%230891b2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23bg)'/%3E%3Cline x1='29' y1='20' x2='22' y2='28' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='35' y1='20' x2='42' y2='28' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='22' y1='38' x2='29' y2='44' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='42' y1='38' x2='35' y2='44' stroke='rgba(255,255,255,0.35)' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M38,15 L35,20 L29,20 L26,15 L29,10 L35,10 Z' fill='rgba(255,255,255,0.92)'/%3E%3Cpath d='M31,13 L34,15 L31,17' stroke='%230a2540' stroke-width='1.3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M25,33 L22,38 L16,38 L13,33 L16,28 L22,28 Z' fill='rgba(255,255,255,0.1)' stroke='rgba(255,255,255,0.75)' stroke-width='1.2'/%3E%3Cpath d='M51,33 L48,38 L42,38 L39,33 L42,28 L48,28 Z' fill='rgba(255,255,255,0.85)'/%3E%3Cpath d='M38,49 L35,54 L29,54 L26,49 L29,44 L35,44 Z' fill='rgba(255,255,255,0.92)'/%3E%3Cpath d='M30,49 L31.5,51 L34.5,47' stroke='%230891b2' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <meta name="description" content="Complete documentation for OrchestAPI — self-hosted API test orchestration platform." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Outfit:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #080b16;
+      color: #94a3b8;
+      line-height: 1.7;
+    }
+    a { color: #60a5fa; text-decoration: none; }
+    a:hover { color: #93bbfc; text-decoration: underline; }
+    h1, h2, h3, h4, h5 { font-family: 'Syne', sans-serif; color: #f1f5f9; line-height: 1.25; }
+    code, pre { font-family: 'Fira Code', monospace; }
+    img { max-width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); }
+
+    :root {
+      --bg-dark: #080b16;
+      --bg-card: #0f1525;
+      --bg-code: #0d1221;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --text-white: #f1f5f9;
+      --text-gray: #94a3b8;
+      --text-muted: #64748b;
+      --border: rgba(255,255,255,0.06);
+    }
+
+    /* ── Layout ─────────────────────────── */
+    .docs-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ────────────────────────── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--bg-card);
+      padding: 24px 0;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+    .sidebar-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: var(--text-white);
+      padding: 0 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .sidebar-logo svg {
+      flex-shrink: 0;
+    }
+    .sidebar-back {
+      display: block;
+      padding: 8px 24px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .sidebar-back:hover { color: var(--text-white); text-decoration: none; }
+    .sidebar-section {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      padding: 16px 24px 8px;
+    }
+    .sidebar a.nav-link {
+      display: block;
+      padding: 6px 24px 6px 28px;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .sidebar a.nav-link:hover {
+      color: var(--text-white);
+      background: rgba(59,130,246,0.05);
+      text-decoration: none;
+    }
+    .sidebar a.nav-link.sub {
+      padding-left: 40px;
+      font-size: 0.82rem;
+    }
+
+    /* ── Main Content ───────────────────── */
+    .docs-main {
+      padding: 48px 64px 120px;
+      max-width: 900px;
+    }
+    .docs-main h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      letter-spacing: -0.8px;
+    }
+    .docs-main > .lead {
+      font-size: 1.1rem;
+      color: var(--text-gray);
+      margin-bottom: 48px;
+      line-height: 1.7;
+    }
+    .docs-main h2 {
+      font-size: 1.6rem;
+      margin-top: 64px;
+      margin-bottom: 16px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      letter-spacing: -0.5px;
+    }
+    .docs-main h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+    .docs-main h3 {
+      font-size: 1.15rem;
+      margin-top: 36px;
+      margin-bottom: 12px;
+      color: var(--accent-light);
+    }
+    .docs-main h4 {
+      font-size: 0.95rem;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    .docs-main p { margin-bottom: 16px; }
+    .docs-main ul, .docs-main ol {
+      margin-bottom: 16px;
+      padding-left: 24px;
+    }
+    .docs-main li { margin-bottom: 6px; }
+
+    /* Inline code */
+    .docs-main code:not(pre code) {
+      background: rgba(59,130,246,0.1);
+      color: var(--accent-light);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      border: 1px solid rgba(59,130,246,0.15);
+    }
+
+    /* Code blocks */
+    pre {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin-bottom: 20px;
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--text-gray);
+    }
+    pre .comment { color: var(--text-muted); }
+    pre .keyword { color: var(--purple); }
+    pre .string { color: var(--green); }
+    pre .flag { color: var(--cyan); }
+    pre .var { color: var(--orange); }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+    }
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      color: var(--text-white);
+      font-weight: 600;
+      font-size: 0.82rem;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    /* Callouts */
+    .callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+    .callout.tip { border-left-color: var(--green); }
+    .callout.warn { border-left-color: var(--orange); }
+    .callout strong { color: var(--text-white); }
+
+    /* Badges */
+    .badge {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: 1px solid;
+      display: inline-block;
+      margin-right: 4px;
+    }
+    .badge-get { color: var(--green); border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.08); }
+    .badge-post { color: var(--accent-light); border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.08); }
+    .badge-put { color: var(--orange); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.08); }
+    .badge-delete { color: var(--red); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+    .badge-patch { color: var(--purple); border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.08); }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    /* Mobile */
+    .sidebar-toggle { display: none; }
+    @media (max-width: 900px) {
+      .docs-layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        z-index: 100;
+        width: 280px;
+        transition: left 0.3s;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+      }
+      .sidebar.open { left: 0; }
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 99;
+      }
+      .sidebar-overlay.open { display: block; }
+      .docs-main { padding: 24px 20px 80px; }
+      .sidebar-toggle {
+        display: flex;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 98;
+        width: 48px; height: 48px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(59,130,246,0.4);
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="overlay"></div>
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">&#9776;</button>
+
+<div class="docs-layout">
+  <!-- ════════ Sidebar ════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <svg width="24" height="24" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <defs><linearGradient id="dlbg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a2540"/><stop offset="100%" stop-color="#0891b2"/></linearGradient></defs>
+        <rect width="64" height="64" rx="14" fill="url(#dlbg)"/>
+        <line x1="29" y1="20" x2="22" y2="28" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="35" y1="20" x2="42" y2="28" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="22" y1="38" x2="29" y2="44" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="42" y1="38" x2="35" y2="44" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M38,15 L35,20 L29,20 L26,15 L29,10 L35,10 Z" fill="rgba(255,255,255,0.92)"/><path d="M31,13 L34,15 L31,17" stroke="#0a2540" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M25,33 L22,38 L16,38 L13,33 L16,28 L22,28 Z" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
+        <path d="M51,33 L48,38 L42,38 L39,33 L42,28 L48,28 Z" fill="rgba(255,255,255,0.85)"/>
+        <path d="M38,49 L35,54 L29,54 L26,49 L29,44 L35,44 Z" fill="rgba(255,255,255,0.92)"/><path d="M30,49 L31.5,51 L34.5,47" stroke="#0891b2" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      OrchestAPI
+    </div>
+    <a href="index.html" class="sidebar-back">&larr; Back to Home</a>
+
+    <div class="sidebar-section">Getting Started</div>
+    <a href="#prerequisites" class="nav-link">Prerequisites</a>
+    <a href="#quick-start" class="nav-link">Quick Start</a>
+    <a href="#docker" class="nav-link">Docker Deployment</a>
+
+    <div class="sidebar-section">Core Concepts</div>
+    <a href="#environments" class="nav-link">Environments</a>
+    <a href="#variables" class="nav-link sub">Variables</a>
+    <a href="#default-headers" class="nav-link sub">Default Headers</a>
+    <a href="#connectors" class="nav-link sub">Connectors</a>
+    <a href="#files" class="nav-link sub">Files</a>
+    <a href="#test-suites" class="nav-link">Test Suites</a>
+
+    <div class="sidebar-section">Step Configuration</div>
+    <a href="#steps" class="nav-link">Steps Overview</a>
+    <a href="#headers" class="nav-link sub">Headers</a>
+    <a href="#request-body" class="nav-link sub">Request Body</a>
+    <a href="#query-params" class="nav-link sub">Query Parameters</a>
+    <a href="#dependencies" class="nav-link sub">Dependencies</a>
+    <a href="#variable-extraction" class="nav-link sub">Variable Extraction</a>
+    <a href="#response-handlers" class="nav-link sub">Response Handlers</a>
+    <a href="#caching" class="nav-link sub">Caching</a>
+    <a href="#dependency-only" class="nav-link sub">Dependency-Only Steps</a>
+    <a href="#verifications" class="nav-link sub">Verifications</a>
+    <a href="#response-validation" class="nav-link sub">Response Validation</a>
+
+    <div class="sidebar-section">Placeholders</div>
+    <a href="#placeholders" class="nav-link">Placeholders & Autocomplete</a>
+    <a href="#env-vars" class="nav-link sub">Environment Variables</a>
+    <a href="#step-refs" class="nav-link sub">Step Response References</a>
+    <a href="#manual-input" class="nav-link sub">Manual Input</a>
+    <a href="#file-refs" class="nav-link sub">File References</a>
+
+    <div class="sidebar-section">Execution</div>
+    <a href="#running-tests" class="nav-link">Running Tests</a>
+    <a href="#run-results" class="nav-link">Run Results</a>
+    <a href="#scheduling" class="nav-link">Scheduling (Cron)</a>
+    <a href="#run-history" class="nav-link">Run History</a>
+    <a href="#dashboard" class="nav-link">Dashboard</a>
+
+    <div class="sidebar-section">Tools</div>
+    <a href="#mock-server" class="nav-link">Mock Server</a>
+    <a href="#webhook-tester" class="nav-link">Webhook Tester</a>
+
+    <div class="sidebar-section">Reference</div>
+    <a href="#curl-import" class="nav-link">Curl Import</a>
+    <a href="#connector-reference" class="nav-link">Connector Reference</a>
+    <a href="#deployment" class="nav-link">Deployment</a>
+    <a href="#context-path" class="nav-link sub">Context Path</a>
+    <a href="#configuration" class="nav-link">Configuration</a>
+  </aside>
+
+  <!-- ════════ Main Content ════════ -->
+  <main class="docs-main">
+    <h1>Documentation</h1>
+    <p class="lead">
+      Complete guide to setting up, configuring, and using OrchestAPI — the self-hosted API test orchestration platform
+      with DAG-based dependencies, live streaming, infrastructure verification, and scheduled execution.
+    </p>
+
+    <!-- ──────── Prerequisites ──────── -->
+    <h2 id="prerequisites">Prerequisites</h2>
+    <ul>
+      <li><strong>Java 21</strong> (for running from source)</li>
+      <li><strong>Node.js 18+</strong> with npm (for frontend development)</li>
+      <li><strong>PostgreSQL 14+</strong> (or Docker to run it)</li>
+      <li><strong>Docker</strong> (recommended for production deployment)</li>
+    </ul>
+
+    <!-- ──────── Quick Start ──────── -->
+    <h2 id="quick-start">Quick Start</h2>
+
+    <h3>1. Start PostgreSQL</h3>
+    <p>Using Docker:</p>
+    <pre><code>docker run -d \
+  --name orchestapi-db \
+  -e POSTGRES_USER=orchestapi \
+  -e POSTGRES_PASSWORD=your_password \
+  -e POSTGRES_DB=orchestapi \
+  -p 5432:5432 \
+  postgres:17</code></pre>
+    <p>Or use any existing PostgreSQL instance.</p>
+
+    <h3>2. Start the Backend</h3>
+    <pre><code>cd backend
+
+<span class="comment"># Set your database credentials</span>
+export DB_URL=jdbc:postgresql://localhost:5432/orchestapi
+export DB_USERNAME=orchestapi
+export DB_PASSWORD=your_password
+
+<span class="comment"># Run</span>
+./mvnw spring-boot:run</code></pre>
+    <p>The backend starts on <strong>http://localhost:8080</strong>. Database schema and tables are created automatically via Flyway on first startup.</p>
+
+    <h3>3. Start the Frontend</h3>
+    <pre><code>cd frontend
+npm install
+npm run dev</code></pre>
+    <p>The frontend starts on <strong>http://localhost:3000</strong> and proxies API calls to the backend.</p>
+
+    <!-- ──────── Docker ──────── -->
+    <h2 id="docker">Docker Deployment</h2>
+    <p>The recommended way to deploy OrchestAPI in production is via Docker. The image bundles both frontend and backend into a single container.</p>
+
+    <h3>Using Docker Compose (recommended)</h3>
+    <pre><code><span class="comment"># Clone the repository</span>
+git clone https://github.com/santhoshkumr96/orchestapi.git
+cd orchestapi
+
+<span class="comment"># Start everything (PostgreSQL + OrchestAPI)</span>
+docker compose up -d
+
+<span class="comment"># Open http://localhost:8080</span></code></pre>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> Set <code>DB_PASSWORD</code> in a <code>.env</code> file next to <code>docker-compose.yml</code> for security.
+    </div>
+
+    <h3>Using Docker directly</h3>
+    <pre><code><span class="comment"># Pull the image</span>
+docker pull santhoshkumr96/orchestapi:latest
+
+<span class="comment"># Run with your own PostgreSQL</span>
+docker run -d \
+  --name orchestapi \
+  -p 8080:8080 \
+  -e DB_URL=jdbc:postgresql://your-host:5432/orchestapi \
+  -e DB_USERNAME=orchestapi \
+  -e DB_PASSWORD=your_password \
+  santhoshkumr96/orchestapi:latest</code></pre>
+
+    <h3>Building the image locally</h3>
+    <pre><code>docker build -t santhoshkumr96/orchestapi:latest .</code></pre>
+
+    <!-- ──────── Environments ──────── -->
+    <h2 id="environments">Environments</h2>
+    <p>Environments hold all the configuration for a target system — variables, headers, infrastructure connectors, and files. Each test suite has a default environment, which can be overridden at run time.</p>
+    <p>Go to <strong>Environments</strong> in the sidebar, click <strong>New Environment</strong>, then configure the sections below.</p>
+
+    <h3 id="variables">Variables</h3>
+    <p>Key-value pairs available to all steps via <code>${VAR_NAME}</code> syntax.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Key</strong></td><td>Variable name (unique per environment)</td></tr>
+        <tr><td><strong>Value</strong></td><td>Variable value</td></tr>
+        <tr><td><strong>Value Type</strong></td><td><code>STATIC</code> (use as-is), <code>UUID</code> (auto-generate per request), <code>ISO_TIMESTAMP</code> (auto-generate current UTC time)</td></tr>
+        <tr><td><strong>Secret</strong></td><td>Toggle on to mask the value in API responses and UI</td></tr>
+      </tbody>
+    </table>
+    <p>Common variables: <code>BASE_URL</code>, <code>API_KEY</code>, <code>AUTH_TOKEN</code>, <code>TENANT_ID</code>.</p>
+
+    <h3 id="default-headers">Default Headers</h3>
+    <p>Headers automatically added to every API step that uses this environment. Step-level headers override these if the same key is used.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Header Key</strong></td><td>Header name (e.g., <code>Authorization</code>, <code>Content-Type</code>)</td></tr>
+        <tr><td><strong>Value Type</strong></td><td>How the value is generated</td></tr>
+        <tr><td><strong>Header Value</strong></td><td>The value or variable reference</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Value Types</h4>
+    <table>
+      <thead><tr><th>Type</th><th>Behavior</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>STATIC</code></td><td>Use the value as-is</td><td><code>application/json</code></td></tr>
+        <tr><td><code>VARIABLE</code></td><td>Look up an environment variable by name</td><td><code>api_token</code> &rarr; resolves to the variable's value</td></tr>
+        <tr><td><code>UUID</code></td><td>Auto-generate a new UUID v4 per request</td><td><code>550e8400-e29b-41d4-...</code></td></tr>
+        <tr><td><code>ISO_TIMESTAMP</code></td><td>Auto-generate current UTC timestamp</td><td><code>2026-02-26T10:30:00.000Z</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="connectors">Connectors</h3>
+    <p>Infrastructure connectors for post-step verifications (e.g., check a DB row was created, verify a Kafka event was published). See <a href="#connector-reference">Connector Reference</a> for all types and config fields.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Name</strong></td><td>Unique name (referenced in step verifications)</td></tr>
+        <tr><td><strong>Type</strong></td><td>MYSQL, POSTGRES, ORACLE, SQLSERVER, REDIS, ELASTICSEARCH, KAFKA, RABBITMQ, MONGODB</td></tr>
+        <tr><td><strong>Config</strong></td><td>Type-specific connection fields (host, port, credentials, SSL, etc.)</td></tr>
+      </tbody>
+    </table>
+    <p>Use the <strong>Test Connection</strong> button to verify connectivity before saving.</p>
+
+    <h3 id="files">Files</h3>
+    <p>Binary files stored in the database, referenced in form-data requests via <code>${FILE:fileKey}</code>.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>File Key</strong></td><td>Unique identifier (used in <code>${FILE:key}</code> syntax)</td></tr>
+        <tr><td><strong>File</strong></td><td>The uploaded file (any type, max 50 MB)</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ──────── Test Suites ──────── -->
+    <h2 id="test-suites">Test Suites</h2>
+    <p>A test suite is a collection of API steps with an optional dependency graph (DAG). Go to <strong>Test Suites</strong> in the sidebar.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Name</strong></td><td>Suite name (unique)</td></tr>
+        <tr><td><strong>Description</strong></td><td>Optional description</td></tr>
+        <tr><td><strong>Default Environment</strong></td><td>Environment used unless overridden at run time</td></tr>
+      </tbody>
+    </table>
+    <p>Steps within a suite can depend on each other, forming a directed acyclic graph. The execution engine resolves this graph and runs steps in the correct order.</p>
+
+    <!-- ──────── Steps ──────── -->
+    <h2 id="steps">Steps</h2>
+    <p>Each step represents a single API call. Click <strong>+ Add Step</strong> or use <strong>Import from curl</strong> to create one. The step editor has a familiar tabbed interface:</p>
+    <ul>
+      <li><strong>Headers</strong> — request headers</li>
+      <li><strong>Params</strong> — query parameters</li>
+      <li><strong>Body</strong> — request body (JSON or form-data)</li>
+      <li><strong>Dependencies</strong> — step dependencies</li>
+      <li><strong>Handlers</strong> — response code handlers</li>
+      <li><strong>Variables</strong> — variable extraction</li>
+      <li><strong>Verifications</strong> — infrastructure verifications</li>
+      <li><strong>Validation</strong> — response validation rules</li>
+    </ul>
+
+    <h4>HTTP Methods</h4>
+    <p>
+      <span class="badge badge-get">GET</span>
+      <span class="badge badge-post">POST</span>
+      <span class="badge badge-put">PUT</span>
+      <span class="badge badge-delete">DELETE</span>
+      <span class="badge badge-patch">PATCH</span>
+    </p>
+    <p>The URL supports placeholders: <code>${BASE_URL}/api/users/{{Create User.id}}</code></p>
+
+    <h3 id="headers">Headers</h3>
+    <p>Step-level headers that override environment defaults when the same key is used. Each header is a key-value pair. Placeholders work in both key and value.</p>
+    <div class="callout">
+      <strong>Default Headers:</strong> Environment default headers are auto-applied to every step. Toggle individual default headers on/off per step in the Headers tab.
+    </div>
+
+    <h3 id="request-body">Request Body</h3>
+    <table>
+      <thead><tr><th>Body Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>None</strong></td><td>No request body (default for GET/DELETE)</td></tr>
+        <tr><td><strong>JSON</strong></td><td>Raw JSON body with syntax validation. Content-Type set to <code>application/json</code></td></tr>
+        <tr><td><strong>Form Data</strong></td><td>Multipart form-data with text and file fields</td></tr>
+      </tbody>
+    </table>
+    <h4>Form Data Fields</h4>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Key</td><td>&mdash;</td><td>Form field name</td></tr>
+        <tr><td>Type</td><td><code>text</code></td><td>Plain text (supports <code>${VAR}</code> and <code>{{step.path}}</code> placeholders)</td></tr>
+        <tr><td>Type</td><td><code>file</code></td><td>File reference using <code>${FILE:fileKey}</code> syntax</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="query-params">Query Parameters</h3>
+    <p>Key-value pairs appended to the URL as <code>?key=value&amp;key2=value2</code>. Placeholders supported in both key and value.</p>
+
+    <h3 id="dependencies">Dependencies</h3>
+    <p>Steps that must execute before this one. Select from other steps in the same suite.</p>
+    <table>
+      <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Use Cache</strong></td><td><code>true</code></td><td>Reuse the dependency's cached response if TTL hasn't expired. Set <code>false</code> to always re-execute.</td></tr>
+        <tr><td><strong>Reuse Manual Input</strong></td><td><code>true</code></td><td>If the dependency has <code>#{param}</code> placeholders and the value was already provided, silently reuse it. Set <code>false</code> to prompt again.</td></tr>
+      </tbody>
+    </table>
+    <p>Once a dependency is added, reference its response data with <code>{{StepName.jsonPath}}</code> in any field.</p>
+
+    <h3 id="variable-extraction">Variable Extraction</h3>
+    <p>Extract values from a step's response for use in later steps.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Variable Name</strong></td><td>Name to store the extracted value</td></tr>
+        <tr><td><strong>JSON Path</strong></td><td>Path to the value in the response</td></tr>
+        <tr><td><strong>Source</strong></td><td>Where to extract from</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Extraction Sources</h4>
+    <table>
+      <thead><tr><th>Source</th><th>JSON Path / Key</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>RESPONSE_BODY</code></td><td><code>$.data.id</code></td><td>Extract from JSON response body</td></tr>
+        <tr><td><code>RESPONSE_HEADER</code></td><td><code>Authorization</code></td><td>Extract a response header value by name</td></tr>
+        <tr><td><code>STATUS_CODE</code></td><td><em>(not used)</em></td><td>Stores the HTTP status code as a string</td></tr>
+        <tr><td><code>REQUEST_BODY</code></td><td><code>$.orderId</code></td><td>Extract from the resolved request body</td></tr>
+        <tr><td><code>REQUEST_HEADER</code></td><td><code>X-Request-ID</code></td><td>Extract a resolved request header value</td></tr>
+        <tr><td><code>QUERY_PARAM</code></td><td><code>page</code></td><td>Extract a resolved query parameter value</td></tr>
+        <tr><td><code>REQUEST_URL</code></td><td><em>(not used)</em></td><td>Stores the full resolved request URL</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Resolved values:</strong> All extracted values are the actual runtime values, not the placeholder templates. For example, extracting from <code>REQUEST_HEADER</code> with key <code>X-Request-ID</code> returns the generated UUID, not <code>${REQUEST_ID}</code>.
+    </div>
+
+    <h4>JSON Path Syntax</h4>
+    <table>
+      <thead><tr><th>Pattern</th><th>Example</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>$.field</code></td><td><code>$.id</code></td><td>Top-level field</td></tr>
+        <tr><td><code>$.nested.field</code></td><td><code>$.data.user.name</code></td><td>Nested field</td></tr>
+        <tr><td><code>$.array[0]</code></td><td><code>$.items[0]</code></td><td>First array element</td></tr>
+        <tr><td><code>$.array[0].field</code></td><td><code>$.items[0].id</code></td><td>Field in first array element</td></tr>
+        <tr><td><code>$.length()</code></td><td><code>$.items.length()</code></td><td>Array or string length</td></tr>
+        <tr><td><code>$.size()</code></td><td><code>$.items.size()</code></td><td>Same as length()</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="response-handlers">Response Handlers</h3>
+    <p>Define what action to take for each HTTP status code. Handlers are evaluated in priority order. Specific codes take precedence over ranges.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Match Code</strong></td><td>HTTP status code or range: <code>200</code>, <code>404</code>, <code>2xx</code>, <code>4xx</code>, <code>5xx</code></td></tr>
+        <tr><td><strong>Action</strong></td><td>What to do when matched</td></tr>
+        <tr><td><strong>Priority</strong></td><td>Evaluation order (0 = first)</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Actions</h4>
+    <table>
+      <thead><tr><th>Action</th><th>Description</th><th>Extra Fields</th></tr></thead>
+      <tbody>
+        <tr><td><code>SUCCESS</code></td><td>Mark step as successful, proceed to dependents</td><td>&mdash;</td></tr>
+        <tr><td><code>ERROR</code></td><td>Mark step as failed, skip dependents</td><td>&mdash;</td></tr>
+        <tr><td><code>RETRY</code></td><td>Re-execute the step after a delay</td><td><code>retryCount</code> (max attempts), <code>retryDelaySeconds</code></td></tr>
+        <tr><td><code>FIRE_SIDE_EFFECT</code></td><td>Execute another step as a side effect</td><td><code>sideEffectStepId</code> (which step to trigger)</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Example Setup</h4>
+    <table>
+      <thead><tr><th>Match Code</th><th>Action</th><th>Priority</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>2xx</code></td><td>SUCCESS</td><td>0</td><td>Any 2xx is success</td></tr>
+        <tr><td><code>500</code></td><td>RETRY</td><td>1</td><td>Retry on server error (3 times, 5s delay)</td></tr>
+        <tr><td><code>4xx</code></td><td>ERROR</td><td>2</td><td>Client errors are failures</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="caching">Caching</h3>
+    <p>Within-run response caching to avoid re-executing the same dependency multiple times.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Cacheable</strong></td><td><code>false</code></td><td>Enable caching for this step's response</td></tr>
+        <tr><td><strong>Cache TTL (seconds)</strong></td><td><code>0</code></td><td>How long the cache is valid. <code>0</code> = valid until run ends</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Per-run only:</strong> Cache is not shared across different runs. When a dependent step needs this step's result and the cache has expired, the step is automatically re-executed.
+    </div>
+
+    <h3 id="dependency-only">Dependency-Only Steps</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Dependency Only</strong></td><td><code>false</code></td><td>When <code>true</code>, the step is skipped during suite runs. It only executes when a dependent step needs it. The individual Run button still works.</td></tr>
+      </tbody>
+    </table>
+    <p>Use this for setup steps (e.g., "Create Auth Token") that should only run when another step depends on them.</p>
+
+    <h3 id="verifications">Verifications (Infrastructure)</h3>
+    <p>Run queries against infrastructure connectors after the API call completes, then assert on the results. Verify side effects like database rows, Kafka events, or Redis keys.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Connector</strong></td><td>Which environment connector to use (by name)</td></tr>
+        <tr><td><strong>Query</strong></td><td>The query/command to execute (connector-specific)</td></tr>
+        <tr><td><strong>Timeout (s)</strong></td><td>Overall verification timeout (default 30)</td></tr>
+        <tr><td><strong>Query Timeout (s)</strong></td><td>Query execution timeout (default 30)</td></tr>
+        <tr><td><strong>Pre-Listen</strong></td><td>Start listening BEFORE the step executes (for Kafka, RabbitMQ)</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Pre-Listen Mode</h4>
+    <p>For asynchronous systems where the event is published during the API call:</p>
+    <ol>
+      <li>Verification sets up a listener (e.g., Kafka consumer) <strong>before</strong> the API call</li>
+      <li>Step executes the API call</li>
+      <li>Listener waits for a matching message within the timeout</li>
+      <li>Assertions run on the received message</li>
+    </ol>
+
+    <h4>Assertions</h4>
+    <p>Each verification can have multiple assertions on the query result:</p>
+    <table>
+      <thead><tr><th>Operator</th><th>Description</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>EQUALS</code></td><td>Exact match</td><td><code>$.status</code> EQUALS <code>"active"</code></td></tr>
+        <tr><td><code>NOT_EQUALS</code></td><td>Not equal</td><td><code>$.status</code> NOT_EQUALS <code>"deleted"</code></td></tr>
+        <tr><td><code>CONTAINS</code></td><td>Substring match</td><td><code>$.message</code> CONTAINS <code>"success"</code></td></tr>
+        <tr><td><code>NOT_CONTAINS</code></td><td>Doesn't contain</td><td><code>$.error</code> NOT_CONTAINS <code>"fatal"</code></td></tr>
+        <tr><td><code>REGEX</code></td><td>Regex pattern match</td><td><code>$.email</code> REGEX <code>^.+@.+\..+$</code></td></tr>
+        <tr><td><code>GT</code></td><td>Greater than (numeric)</td><td><code>$.count</code> GT <code>0</code></td></tr>
+        <tr><td><code>LT</code></td><td>Less than (numeric)</td><td><code>$.latency</code> LT <code>1000</code></td></tr>
+        <tr><td><code>GTE</code></td><td>Greater than or equal</td><td><code>$.count</code> GTE <code>1</code></td></tr>
+        <tr><td><code>LTE</code></td><td>Less than or equal</td><td><code>$.retries</code> LTE <code>3</code></td></tr>
+        <tr><td><code>EXISTS</code></td><td>Field exists</td><td><code>$.id</code> EXISTS</td></tr>
+        <tr><td><code>NOT_EXISTS</code></td><td>Field doesn't exist</td><td><code>$.error</code> NOT_EXISTS</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="response-validation">Response Validation</h3>
+    <p>Validate the HTTP response itself (separate from infrastructure verifications). Four validation types are available:</p>
+
+    <h4>1. Header Validation</h4>
+    <p>Assert response headers match expected values. Useful for checking content types, cache headers, auth tokens.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Header Name</strong></td><td>Response header to check</td></tr>
+        <tr><td><strong>Operator</strong></td><td>EQUALS, CONTAINS, REGEX, EXISTS, etc.</td></tr>
+        <tr><td><strong>Expected Value</strong></td><td>Value to compare against</td></tr>
+      </tbody>
+    </table>
+
+    <h4>2. Body Exact Match</h4>
+    <p>Compare the entire response body against an expected payload.</p>
+    <table>
+      <thead><tr><th>Match Mode</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>STRICT</strong></td><td>Exact match — same keys, same values, same structure</td></tr>
+        <tr><td><strong>FLEXIBLE</strong></td><td>Subset match — expected fields must be present, extra fields allowed</td></tr>
+        <tr><td><strong>STRUCTURE</strong></td><td>Shape match — validates structure and types only, ignores actual values</td></tr>
+      </tbody>
+    </table>
+
+    <h4>3. Body Field Assertion</h4>
+    <p>Target specific fields via JSON path and apply assertion operators.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>JSON Path</strong></td><td>Path to the value (e.g., <code>$.data.orders[0].total</code>)</td></tr>
+        <tr><td><strong>Operator</strong></td><td>EQUALS, CONTAINS, GT, LT, REGEX, EXISTS, etc.</td></tr>
+        <tr><td><strong>Expected Value</strong></td><td>Value to compare against</td></tr>
+      </tbody>
+    </table>
+
+    <h4>4. Body Data Type</h4>
+    <p>Verify field types at any JSON path.</p>
+    <table>
+      <thead><tr><th>Expected Type</th><th>Matches</th></tr></thead>
+      <tbody>
+        <tr><td><code>STRING</code></td><td>JSON string values</td></tr>
+        <tr><td><code>NUMBER</code></td><td>Integer or decimal numbers</td></tr>
+        <tr><td><code>BOOLEAN</code></td><td><code>true</code> or <code>false</code></td></tr>
+        <tr><td><code>ARRAY</code></td><td>JSON arrays</td></tr>
+        <tr><td><code>OBJECT</code></td><td>JSON objects</td></tr>
+        <tr><td><code>NULL</code></td><td>Null values</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ──────── Placeholders ──────── -->
+    <h2 id="placeholders">Placeholders &amp; Autocomplete</h2>
+    <p>OrchestAPI supports four types of dynamic placeholders. All placeholder-enabled fields show an autocomplete dropdown.</p>
+
+    <h3 id="env-vars">Environment Variables — <code>${VAR_NAME}</code></h3>
+    <p>Type <code>${</code> to trigger autocomplete. Resolves to the variable value from the active environment. Works in URL, headers, body, query params, and verification queries.</p>
+    <div class="callout tip"><strong>Highlighted in green</strong> in the editor.</div>
+
+    <h3 id="step-refs">Step Response References — <code>{{StepName.path}}</code></h3>
+    <p>Type <code>{{</code> to trigger autocomplete. References extracted variables or any JSON path from a dependency step's response. Two-step autocomplete:</p>
+    <ol>
+      <li>Type <code>{{</code> &rarr; shows dependent step names</li>
+      <li>Select a step &rarr; type <code>.</code> &rarr; shows extracted variable names</li>
+      <li>You can also type a custom JSON path (e.g., <code>{{StepName.data.items[0].id}}</code>)</li>
+    </ol>
+    <div class="callout"><strong>Highlighted in blue</strong> in the editor.</div>
+
+    <h3 id="manual-input">Manual Input — <code>#{paramName}</code></h3>
+    <table>
+      <thead><tr><th>Syntax</th><th>Example</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td><code>#{paramName}</code></td><td><code>#{otp}</code></td><td>Prompts user at runtime (required)</td></tr>
+        <tr><td><code>#{paramName:default}</code></td><td><code>#{env:production}</code></td><td>Prompts with pre-filled default (optional)</td></tr>
+      </tbody>
+    </table>
+    <p>During execution, the UI pauses and shows an input modal. Enter the value and execution resumes.</p>
+    <div class="callout warn">
+      <strong>Scheduled runs:</strong> Only <code>#{param:default}</code> placeholders work (the default is applied automatically). <code>#{param}</code> without a default is skipped.
+    </div>
+    <div class="callout"><strong>Highlighted in red/orange</strong> in the editor.</div>
+
+    <h3 id="file-refs">File References — <code>${FILE:fileKey}</code></h3>
+    <p>Type <code>${FILE:</code> to trigger autocomplete. References an uploaded file from the environment's Files section. Used in form-data fields to attach files to multipart requests.</p>
+
+    <!-- ──────── Running Tests ──────── -->
+    <h2 id="running-tests">Running Tests</h2>
+
+    <h3>Single Step</h3>
+    <p>Click the <strong>play button</strong> next to any step. The step and all its transitive dependencies execute in order. Results show the target step at top level with dependencies in a collapsible accordion.</p>
+
+    <h3>Full Suite</h3>
+    <p>Click <strong>Run Suite</strong> at the top of the suite detail page. Optionally override the default environment. All non-dependency-only steps execute in topological order based on the dependency graph.</p>
+
+    <h3>Live Streaming (SSE)</h3>
+    <p>Both single step and suite runs stream results in real time via Server-Sent Events:</p>
+    <table>
+      <thead><tr><th>Event</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>run-started</code></td><td>Run initiated, returns <code>runId</code></td></tr>
+        <tr><td><code>step</code></td><td>A step completed — includes full result with status, response, verifications</td></tr>
+        <tr><td><code>input-required</code></td><td>Execution paused — a step needs manual input</td></tr>
+        <tr><td><code>complete</code></td><td>All steps finished — includes final status and total duration</td></tr>
+        <tr><td><code>run-error</code></td><td>Fatal error during run</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Manual Input During Runs</h3>
+    <p>When a step contains <code>#{param}</code> placeholders, execution pauses and shows a modal. Each parameter is shown with its name, optional default, and cached value from earlier steps.</p>
+
+    <!-- ──────── Run Results ──────── -->
+    <h2 id="run-results">Run Results</h2>
+    <p>Each step result includes:</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Status</strong></td><td>SUCCESS, ERROR, SKIPPED, VERIFICATION_FAILED, VALIDATION_FAILED</td></tr>
+        <tr><td><strong>Response Code</strong></td><td>HTTP status code</td></tr>
+        <tr><td><strong>Response Body</strong></td><td>Full response body</td></tr>
+        <tr><td><strong>Response Headers</strong></td><td>All response headers</td></tr>
+        <tr><td><strong>Duration</strong></td><td>Execution time in milliseconds</td></tr>
+        <tr><td><strong>Request URL</strong></td><td>The resolved URL that was called</td></tr>
+        <tr><td><strong>Request Body</strong></td><td>The resolved request body</td></tr>
+        <tr><td><strong>Extracted Variables</strong></td><td>Variables extracted from the response</td></tr>
+        <tr><td><strong>Verification Results</strong></td><td>Each verification's pass/fail with assertion details</td></tr>
+        <tr><td><strong>Validation Results</strong></td><td>Response validation pass/fail details</td></tr>
+        <tr><td><strong>From Cache</strong></td><td>Whether the result was served from cache</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Step Status Values</h4>
+    <table>
+      <thead><tr><th>Status</th><th>Color</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>SUCCESS</code></td><td><span class="status-dot" style="background:var(--green);"></span>Green</td><td>Step and all verifications/validations passed</td></tr>
+        <tr><td><code>ERROR</code></td><td><span class="status-dot" style="background:var(--red);"></span>Red</td><td>HTTP call failed or response handler returned ERROR</td></tr>
+        <tr><td><code>SKIPPED</code></td><td><span class="status-dot" style="background:#94a3b8;"></span>Gray</td><td>Dependency failed or step not needed</td></tr>
+        <tr><td><code>VERIFICATION_FAILED</code></td><td><span class="status-dot" style="background:var(--purple);"></span>Purple</td><td>API call succeeded but infrastructure verification assertions failed</td></tr>
+        <tr><td><code>VALIDATION_FAILED</code></td><td><span class="status-dot" style="background:var(--cyan);"></span>Teal</td><td>API call succeeded but response validation failed</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Suite Status Values</h4>
+    <table>
+      <thead><tr><th>Status</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>SUCCESS</code></td><td>All steps passed</td></tr>
+        <tr><td><code>PARTIAL_FAILURE</code></td><td>Some steps failed but suite continued</td></tr>
+        <tr><td><code>FAILURE</code></td><td>A critical step failed</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ──────── Scheduling ──────── -->
+    <h2 id="scheduling">Scheduling</h2>
+    <p>Go to <strong>Runs</strong> page &rarr; <strong>Schedules</strong> tab.</p>
+
+    <h3>Create a Schedule</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Test Suite</strong></td><td>Which suite to run</td></tr>
+        <tr><td><strong>Environment</strong></td><td>Which environment to use</td></tr>
+        <tr><td><strong>Cron Expression</strong></td><td>Standard 5-field cron pattern</td></tr>
+        <tr><td><strong>Description</strong></td><td>Optional label</td></tr>
+        <tr><td><strong>Active</strong></td><td>Toggle on/off without deleting</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Cron Format</h3>
+    <pre><code>&boxdr;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine; minute (0-59)
+&boxv; &boxdr;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine; hour (0-23)
+&boxv; &boxv; &boxdr;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine; day of month (1-31)
+&boxv; &boxv; &boxv; &boxdr;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine; month (1-12)
+&boxv; &boxv; &boxv; &boxv; &boxdr;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine;&HorizontalLine; day of week (0-6, 0=Sunday)
+&boxv; &boxv; &boxv; &boxv; &boxv;
+* * * * *</code></pre>
+
+    <h4>Examples</h4>
+    <table>
+      <thead><tr><th>Expression</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>0 0 * * *</code></td><td>Every day at midnight</td></tr>
+        <tr><td><code>0 9 * * *</code></td><td>Every day at 9:00 AM</td></tr>
+        <tr><td><code>*/15 * * * *</code></td><td>Every 15 minutes</td></tr>
+        <tr><td><code>0 */4 * * *</code></td><td>Every 4 hours</td></tr>
+        <tr><td><code>0 9 * * MON</code></td><td>Every Monday at 9:00 AM</td></tr>
+        <tr><td><code>0 0 1 * *</code></td><td>First of every month at midnight</td></tr>
+      </tbody>
+    </table>
+    <p>Use <strong>Preview</strong> to see the next fire times before saving.</p>
+
+    <div class="callout warn">
+      <strong>Scheduled run behavior:</strong> Runs are non-interactive. <code>#{param:default}</code> uses the default automatically. <code>#{param}</code> without a default is skipped. Results are saved with trigger type <code>SCHEDULED</code>.
+    </div>
+
+    <!-- ──────── Run History ──────── -->
+    <h2 id="run-history">Run History</h2>
+    <p>Go to <strong>Runs</strong> page &rarr; <strong>Run History</strong> tab.</p>
+    <table>
+      <thead><tr><th>Filter</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Suite</strong></td><td>Filter by test suite</td></tr>
+        <tr><td><strong>Environment</strong></td><td>Filter by environment</td></tr>
+        <tr><td><strong>Status</strong></td><td>SUCCESS, FAILURE, PARTIAL_FAILURE, CANCELLED, RUNNING</td></tr>
+        <tr><td><strong>Trigger Type</strong></td><td>MANUAL or SCHEDULED</td></tr>
+        <tr><td><strong>Date Range</strong></td><td>Filter by start date range</td></tr>
+      </tbody>
+    </table>
+    <p>Click any row to expand full step-by-step results. <strong>Export</strong> results to JSON.</p>
+
+    <!-- ──────── Dashboard ──────── -->
+    <h2 id="dashboard">Dashboard</h2>
+    <p>The dashboard shows execution statistics at a glance:</p>
+    <ul>
+      <li><strong>Total Runs</strong> — all runs ever executed</li>
+      <li><strong>Pass Rate</strong> — percentage of successful runs</li>
+      <li><strong>Active Schedules</strong> — number of enabled schedules</li>
+      <li><strong>Total Suites / Environments</strong> — entity counts</li>
+      <li><strong>Recent Runs</strong> — latest run results</li>
+      <li><strong>Suite Health</strong> — pass rate per suite</li>
+    </ul>
+
+    <!-- ──────── Mock Server ──────── -->
+    <h2 id="mock-server">Mock Server</h2>
+    <p>Create standalone mock API endpoints to simulate external services during testing. Go to <strong>Mock Server</strong> in the sidebar.</p>
+
+    <h3>Mock Servers</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Name</strong></td><td>Server name (unique)</td></tr>
+        <tr><td><strong>Description</strong></td><td>Optional description</td></tr>
+        <tr><td><strong>Enabled</strong></td><td>Toggle to enable/disable the mock server</td></tr>
+      </tbody>
+    </table>
+    <p>Each mock server gets a unique URL: <code>http://your-host/mock/{serverId}/...</code></p>
+
+    <h3>Mock Endpoints</h3>
+    <p>Each endpoint defines a path pattern, HTTP method, and configurable response.</p>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Name</strong></td><td>Endpoint name</td></tr>
+        <tr><td><strong>HTTP Method</strong></td><td>GET, POST, PUT, DELETE, PATCH, or ANY</td></tr>
+        <tr><td><strong>Path Pattern</strong></td><td>URL path to match (supports <code>:param</code> and <code>/**</code> wildcard)</td></tr>
+        <tr><td><strong>Response Status</strong></td><td>HTTP status code to return</td></tr>
+        <tr><td><strong>Response Body</strong></td><td>Body to return</td></tr>
+        <tr><td><strong>Response Headers</strong></td><td>Custom headers to include</td></tr>
+        <tr><td><strong>Delay (ms)</strong></td><td>Artificial delay before responding</td></tr>
+        <tr><td><strong>Match Rules</strong></td><td>Additional conditions (header, query param, body JSON path)</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Path Matching</h4>
+    <table>
+      <thead><tr><th>Pattern</th><th>Matches</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/users</code></td><td>Exact path</td></tr>
+        <tr><td><code>/api/users/:id</code></td><td>Parameterized segment (<code>/api/users/123</code>)</td></tr>
+        <tr><td><code>/api/**</code></td><td>Wildcard &mdash; any path under <code>/api/</code></td></tr>
+      </tbody>
+    </table>
+
+    <h4>Match Rules</h4>
+    <p>All rules must match (AND logic). Endpoints are evaluated in sort order &mdash; first match wins.</p>
+    <table>
+      <thead><tr><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>HEADER</code></td><td>Match a request header key (and optionally value)</td></tr>
+        <tr><td><code>QUERY_PARAM</code></td><td>Match a query parameter key (and optionally value)</td></tr>
+        <tr><td><code>BODY_JSON_PATH</code></td><td>Match a JSON path in the request body</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Request Logging</h4>
+    <p>All incoming requests are logged with method, path, headers, body, response status, duration, and whether an endpoint was matched.</p>
+
+    <!-- ──────── Webhook Tester ──────── -->
+    <h2 id="webhook-tester">Webhook Tester</h2>
+    <p>Receive and inspect incoming HTTP requests in real-time &mdash; like webhook.site, but self-hosted. Go to <strong>Webhooks</strong> in the sidebar.</p>
+
+    <h3>Creating a Webhook</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Name</strong></td><td>Webhook name (unique)</td></tr>
+        <tr><td><strong>Description</strong></td><td>Optional description</td></tr>
+        <tr><td><strong>Default Response Status</strong></td><td>HTTP status code returned to the caller (default: 200)</td></tr>
+        <tr><td><strong>Default Response Body</strong></td><td>Body returned to the caller</td></tr>
+        <tr><td><strong>Default Response Headers</strong></td><td>Custom headers returned to the caller</td></tr>
+      </tbody>
+    </table>
+    <p>Each webhook gets a unique URL: <code>http://your-host/webhook/{webhookId}/...</code></p>
+    <p>Any HTTP method can be used. The webhook captures everything and returns the configured response.</p>
+
+    <h3>Request Inspection</h3>
+    <p>The detail page shows a two-panel layout:</p>
+    <ul>
+      <li><strong>Left panel:</strong> Live list of incoming requests (method, path, source IP, timestamp)</li>
+      <li><strong>Right panel:</strong> Full request detail for the selected request</li>
+    </ul>
+    <h4>Captured Data</h4>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>HTTP Method</td><td>GET, POST, PUT, etc.</td></tr>
+        <tr><td>Path</td><td>Path after <code>/webhook/{id}/</code></td></tr>
+        <tr><td>Headers</td><td>All request headers</td></tr>
+        <tr><td>Query Parameters</td><td>URL query string parameters</td></tr>
+        <tr><td>Body</td><td>Text/JSON as-is, binary base64-encoded</td></tr>
+        <tr><td>Content-Type</td><td>Request content type</td></tr>
+        <tr><td>Source IP</td><td>Caller's IP (supports X-Forwarded-For)</td></tr>
+        <tr><td>Files</td><td>Multipart uploads with preview and download</td></tr>
+      </tbody>
+    </table>
+
+    <h4>File Handling</h4>
+    <table>
+      <thead><tr><th>Content Type</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td>JSON / text</td><td>Stored as-is, formatted in the UI</td></tr>
+        <tr><td>Images (image/*)</td><td>Base64-encoded, rendered inline with preview button</td></tr>
+        <tr><td>Binary (pdf, audio, video)</td><td>Base64-encoded, download button available</td></tr>
+        <tr><td>Multipart</td><td>Files extracted with preview (images) and download buttons</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Real-Time Streaming</h4>
+    <p>The detail page connects via SSE and shows new requests instantly with a green &ldquo;Live&rdquo; indicator. Multiple browser tabs can monitor the same webhook simultaneously.</p>
+
+    <h4>Limits</h4>
+    <table>
+      <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Max request body size</td><td>10 MB (returns 413 if exceeded)</td></tr>
+        <tr><td>Max stored requests per webhook</td><td>500 (oldest auto-trimmed)</td></tr>
+        <tr><td>SSE connection timeout</td><td>60 minutes</td></tr>
+      </tbody>
+    </table>
+    <p>When a webhook is disabled, incoming requests receive a <code>503 Service Unavailable</code> response.</p>
+
+    <!-- ──────── Curl Import ──────── -->
+    <h2 id="curl-import">Curl Import</h2>
+    <p>Quickly create a step from a curl command. Click <strong>Import from curl</strong> in the suite detail page.</p>
+
+    <h4>Supported Flags</h4>
+    <table>
+      <thead><tr><th>Flag</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>-X METHOD</code> / <code>--request</code></td><td>HTTP method</td></tr>
+        <tr><td><code>-H "Key: Value"</code> / <code>--header</code></td><td>Request headers (multiple allowed)</td></tr>
+        <tr><td><code>-d data</code> / <code>--data</code></td><td>Request body</td></tr>
+        <tr><td><code>--data-raw</code></td><td>Raw body data</td></tr>
+        <tr><td><code>--data-binary</code></td><td>Binary body data</td></tr>
+        <tr><td>URL query params</td><td>Auto-extracted from the URL</td></tr>
+      </tbody>
+    </table>
+    <p>Line continuations (<code>\</code>) are handled. Step name is auto-generated from the URL path. Method defaults to POST if body is present, GET otherwise.</p>
+
+    <!-- ──────── Connector Reference ──────── -->
+    <h2 id="connector-reference">Connector Reference</h2>
+
+    <h3>JDBC (MySQL, PostgreSQL, Oracle, SQL Server)</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>host</code></td><td>Database host</td></tr>
+        <tr><td><code>port</code></td><td>Port (MySQL: 3306, PG: 5432, Oracle: 1521, MSSQL: 1433)</td></tr>
+        <tr><td><code>database</code></td><td>Database name</td></tr>
+        <tr><td><code>username</code></td><td>Database user</td></tr>
+        <tr><td><code>password</code></td><td>Database password</td></tr>
+        <tr><td><code>ssl</code> / <code>caCertificate</code></td><td>SSL/TLS config (empty CA = trust all)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Query:</strong> Standard SQL SELECT statements.</p>
+    <pre><code>Result: { "rows": [{ "id": 1, "name": "test" }], "rowCount": 1 }</code></pre>
+
+    <h3>Redis</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>host</code> / <code>port</code></td><td>Redis host and port (default 6379)</td></tr>
+        <tr><td><code>password</code></td><td>Auth password (optional)</td></tr>
+        <tr><td><code>database</code></td><td>Database index 0-15 (default 0)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Query:</strong> <code>GET key</code>, <code>HGET hash field</code>, <code>HGETALL hash</code>, <code>EXISTS key</code>, <code>LRANGE key 0 -1</code>, <code>SISMEMBER set member</code>.</p>
+    <pre><code>Result: { "value": "data", "type": "string", "exists": true }</code></pre>
+
+    <h3>Elasticsearch</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>url</code></td><td>Base URL (e.g., <code>https://localhost:9200</code>)</td></tr>
+        <tr><td><code>username</code> / <code>password</code></td><td>Basic auth credentials</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Query:</strong> <code>METHOD /path body</code> — e.g., <code>GET /my-index/_search {"query":{"match_all":{}}}</code></p>
+
+    <h3>Kafka</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>brokers</code></td><td>Comma-separated broker list</td></tr>
+        <tr><td><code>securityProtocol</code></td><td>Optional: SSL, SASL_SSL, SASL_PLAINTEXT</td></tr>
+        <tr><td><code>saslMechanism</code></td><td>Optional: PLAIN, SCRAM-SHA-256, SCRAM-SHA-512</td></tr>
+        <tr><td><code>saslUsername</code> / <code>saslPassword</code></td><td>SASL credentials</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Query (newline-separated):</strong></p>
+    <pre><code>topic=events_topic
+key=order-123</code></pre>
+    <p>Creates an isolated consumer group per verification (UUID-based). Seeks to latest offset and waits for new messages.</p>
+    <pre><code>Result: { "found": true, "key": "order-123",
+  "value": { "eventType": "ORDER_CREATED" },
+  "partition": 0, "offset": 42 }</code></pre>
+
+    <h3>RabbitMQ</h3>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>host</code> / <code>port</code></td><td>Host and port (5672 or 5671 for SSL)</td></tr>
+        <tr><td><code>virtualHost</code></td><td>Virtual host (default <code>/</code>)</td></tr>
+        <tr><td><code>username</code> / <code>password</code></td><td>Auth credentials</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Query (space-separated):</strong> <code>queue=my_queue routingKey=order.created</code></p>
+    <pre><code>Result: { "found": true, "routingKey": "order.created",
+  "body": { "orderId": "123" }, "headers": {} }</code></pre>
+
+    <h3>MongoDB</h3>
+    <p><strong>Option A:</strong> <code>connectionString</code> — full MongoDB URI.</p>
+    <p><strong>Option B:</strong> Individual fields — <code>host</code>, <code>port</code>, <code>database</code>, <code>username</code>, <code>password</code>.</p>
+    <p><strong>Query:</strong> <code>collection.{filter_json}</code> — e.g., <code>orders.{"orderId":"abc123"}</code></p>
+    <pre><code>Result: { "documents": [{ "orderId": "abc123", "status": "completed" }], "count": 1 }</code></pre>
+
+    <!-- ──────── Deployment ──────── -->
+    <h2 id="deployment">Deployment</h2>
+
+    <h3 id="context-path">Context Path (Reverse Proxy / Kubernetes)</h3>
+    <p>When deploying behind a reverse proxy or Kubernetes Ingress with a path prefix (e.g., <code>https://company.com/orchestapi</code>), set two environment variables:</p>
+    <table>
+      <thead><tr><th>Variable</th><th>Layer</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>CONTEXT_PATH</code></td><td>Backend (Spring Boot)</td><td>Sets <code>server.servlet.context-path</code> &mdash; all API routes are prefixed</td></tr>
+        <tr><td><code>VITE_BASE_PATH</code></td><td>Frontend (Vite/React)</td><td>Sets Vite <code>base</code> + React Router <code>basename</code> + axios interceptor</td></tr>
+      </tbody>
+    </table>
+    <p><code>VITE_BASE_PATH</code> is a Docker <strong>build argument</strong> (compiled into the frontend at build time), while <code>CONTEXT_PATH</code> is a runtime environment variable. Both must have the same value.</p>
+
+    <pre><code><span class="comment"># Build with custom base path</span>
+docker build --build-arg VITE_BASE_PATH=/orchestapi -t orchestapi .
+
+<span class="comment"># Run with context path</span>
+docker run -d \
+  --name orchestapi \
+  -p 8080:8080 \
+  -e CONTEXT_PATH=/orchestapi \
+  -e DB_URL=jdbc:postgresql://db:5432/orchestapi \
+  -e DB_USERNAME=orchestapi \
+  -e DB_PASSWORD=your_password \
+  orchestapi</code></pre>
+
+    <div class="callout tip">
+      <strong>Tip:</strong> For local development, both default to <code>/</code> &mdash; no configuration needed.
+    </div>
+
+    <h4>Nginx Reverse Proxy</h4>
+    <pre><code>location /orchestapi/ {
+    proxy_pass http://orchestapi:8080/orchestapi/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}</code></pre>
+
+    <h4>Kubernetes Ingress</h4>
+    <pre><code>apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: orchestapi
+spec:
+  rules:
+    - host: company.com
+      http:
+        paths:
+          - path: /orchestapi
+            pathType: Prefix
+            backend:
+              service:
+                name: orchestapi
+                port:
+                  number: 8080</code></pre>
+
+    <!-- ──────── Configuration ──────── -->
+    <h2 id="configuration">Configuration</h2>
+
+    <h3>Server Environment Variables</h3>
+    <table>
+      <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>DB_URL</code></td><td><code>jdbc:postgresql://localhost:5432/test</code></td><td>PostgreSQL JDBC URL</td></tr>
+        <tr><td><code>DB_USERNAME</code></td><td><em>(required)</em></td><td>Database username</td></tr>
+        <tr><td><code>DB_PASSWORD</code></td><td><em>(required)</em></td><td>Database password</td></tr>
+        <tr><td><code>SERVER_PORT</code></td><td><code>8080</code></td><td>Backend server port</td></tr>
+        <tr><td><code>CONTEXT_PATH</code></td><td><code>/</code></td><td>Servlet context path (e.g., <code>/orchestapi</code>)</td></tr>
+        <tr><td><code>VITE_BASE_PATH</code></td><td><code>/</code></td><td>Frontend base path (Docker build arg, must match <code>CONTEXT_PATH</code>)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Limits</h3>
+    <table>
+      <thead><tr><th>Limit</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Max file upload size</td><td>50 MB</td></tr>
+        <tr><td>Max request body size</td><td>50 MB</td></tr>
+        <tr><td>Max page size (pagination)</td><td>100</td></tr>
+        <tr><td>Default page size</td><td>10</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Database</h3>
+    <ul>
+      <li>Schema: <code>orchestrator</code> (auto-created by Flyway)</li>
+      <li>All tables prefixed with <code>orchestapi_</code></li>
+      <li>Flyway history table: <code>orchestapi_flyway_history</code></li>
+      <li>Migrations run automatically on startup</li>
+    </ul>
+
+    <div style="margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center;">
+      <p style="color: var(--text-muted); font-size: 0.85rem;">
+        &copy; 2026 OrchestAPI. Self-hosted API test orchestration platform.
+      </p>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Mobile sidebar toggle
+  const toggle = document.getElementById('sidebarToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+  sidebar.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1538,7 +1538,11 @@
           &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">DB_USER</span>=<span class="string">your-user</span> \<br/>
           &nbsp;&nbsp;<span class="flag">-e</span> <span class="var">DB_PASS</span>=<span class="string">your-password</span> \<br/>
           &nbsp;&nbsp;santhoshkumr96/orchestapi:latest<br/><br/>
-          <span class="comment"># 3. Open http://localhost:8080</span>
+          <span class="comment"># 3. Open http://localhost:8080</span><br/><br/>
+          <span class="comment"># Deploy behind a reverse proxy / Kubernetes Ingress?</span><br/>
+          <span class="comment"># Set CONTEXT_PATH and build with VITE_BASE_PATH:</span><br/>
+          <span class="keyword">docker</span> build <span class="flag">--build-arg</span> <span class="var">VITE_BASE_PATH</span>=<span class="string">/orchestapi</span> <span class="flag">-t</span> orchestapi .<br/>
+          <span class="keyword">docker</span> run <span class="flag">-e</span> <span class="var">CONTEXT_PATH</span>=<span class="string">/orchestapi</span> ...
         </div>
         <div class="code-block" id="codeManual" style="display:none;">
           <span class="comment"># 1. Clone the repository</span><br/>
