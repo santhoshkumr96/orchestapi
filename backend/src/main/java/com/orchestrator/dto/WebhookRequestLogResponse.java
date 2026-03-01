@@ -27,6 +27,7 @@ public class WebhookRequestLogResponse {
     private String files;
     private Integer responseStatus;
     private String responseBody;
+    private String matchedRuleName;
     private LocalDateTime createdAt;
 
     public static WebhookRequestLogResponse from(WebhookRequestLog log) {
@@ -45,6 +46,7 @@ public class WebhookRequestLogResponse {
                 .files(log.getFiles())
                 .responseStatus(log.getResponseStatus())
                 .responseBody(log.getResponseBody())
+                .matchedRuleName(log.getMatchedRuleName())
                 .createdAt(log.getCreatedAt())
                 .build();
     }

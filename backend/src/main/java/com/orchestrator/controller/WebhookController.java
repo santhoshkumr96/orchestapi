@@ -1,9 +1,6 @@
 package com.orchestrator.controller;
 
-import com.orchestrator.dto.PageResponse;
-import com.orchestrator.dto.WebhookRequest;
-import com.orchestrator.dto.WebhookRequestLogResponse;
-import com.orchestrator.dto.WebhookResponse;
+import com.orchestrator.dto.*;
 import com.orchestrator.service.WebhookHandlerService;
 import com.orchestrator.service.WebhookService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -79,6 +77,15 @@ public class WebhookController {
             @RequestBody Map<String, Boolean> body) {
         boolean enabled = body.getOrDefault("enabled", false);
         return webhookService.toggleEnabled(id, enabled);
+    }
+
+    // ── Response Rules ──────────────────────────────────────────────────
+
+    @PutMapping("/api/webhooks/{id}/response-rules")
+    public WebhookResponse updateResponseRules(
+            @PathVariable UUID id,
+            @Valid @RequestBody List<WebhookResponseRuleDto> rules) {
+        return webhookService.updateResponseRules(id, rules);
     }
 
     // ── Webhook URL ──────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { PageResponse } from '../types/environment'
-import type { Webhook, WebhookRequest, WebhookRequestLog } from '../types/webhook'
+import type { Webhook, WebhookRequest, WebhookRequestLog, WebhookResponseRuleDto } from '../types/webhook'
 
 const BASE = '/api/webhooks'
 const _basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
@@ -34,6 +34,11 @@ export const webhookApi = {
 
   toggleStatus: (id: string, enabled: boolean) =>
     axios.put<Webhook>(`${BASE}/${id}/status`, { enabled }).then((r) => r.data),
+
+  // ── Response Rules ─────────────────────────────────────────────────
+
+  updateResponseRules: (id: string, rules: WebhookResponseRuleDto[]) =>
+    axios.put<Webhook>(`${BASE}/${id}/response-rules`, rules).then((r) => r.data),
 
   // ── URL ─────────────────────────────────────────────────────────────
 

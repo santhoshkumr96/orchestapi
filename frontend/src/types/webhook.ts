@@ -6,6 +6,7 @@ export interface Webhook {
   defaultResponseStatus: number
   defaultResponseBody?: string
   defaultResponseHeaders: { key: string; value: string }[]
+  responseRules: WebhookResponseRuleDto[]
   requestCount: number
   createdAt: string
   updatedAt: string
@@ -17,6 +18,25 @@ export interface WebhookRequest {
   defaultResponseStatus: number
   defaultResponseBody?: string
   defaultResponseHeaders: { key: string; value: string }[]
+}
+
+export type WebhookConditionType = 'HEADER' | 'QUERY_PARAM' | 'BODY_JSON_PATH' | 'REQUEST_PATH'
+
+export interface WebhookRuleConditionDto {
+  id?: string
+  conditionType: WebhookConditionType
+  matchKey: string
+  matchValue?: string
+}
+
+export interface WebhookResponseRuleDto {
+  id?: string
+  name: string
+  enabled: boolean
+  responseStatus: number
+  responseBody?: string
+  responseHeaders: { key: string; value: string }[]
+  conditions: WebhookRuleConditionDto[]
 }
 
 export interface WebhookRequestLog {
@@ -34,5 +54,6 @@ export interface WebhookRequestLog {
   files?: string
   responseStatus: number
   responseBody?: string
+  matchedRuleName?: string
   createdAt: string
 }

@@ -159,6 +159,9 @@ public class MockServerService {
                 if (body == null || body.isBlank()) yield false;
                 yield matchesJsonPath(body, rule.getMatchKey(), rule.getMatchValue());
             }
+            case REQUEST_PATH -> {
+                yield false;
+            }
         };
     }
 

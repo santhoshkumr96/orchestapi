@@ -1,8 +1,12 @@
 package com.orchestrator.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orchestrator.model.Webhook;
 import com.orchestrator.model.WebhookRequestLog;
+import com.orchestrator.model.WebhookResponseRule;
+import com.orchestrator.model.WebhookRuleCondition;
+import com.orchestrator.model.enums.MockMatchRuleType;
 import com.orchestrator.repository.WebhookRepository;
 import com.orchestrator.repository.WebhookRequestLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -147,15 +152,36 @@ public class WebhookHandlerService {
             }
         }
 
-        // Build configured response
+        // Build configured response (start with defaults)
         HttpHeaders responseHeaders = new HttpHeaders();
-        parseResponseHeaders(webhook.getDefaultResponseHeaders(), responseHeaders);
+        String responseBody = webhook.getDefaultResponseBody();
+        int responseStatus = webhook.getDefaultResponseStatus();
+
+        // Evaluate response rules (first match wins)
+        String matchedRuleName = null;
+        if (webhook.getResponseRules() != null) {
+            List<WebhookResponseRule> sorted = webhook.getResponseRules().stream()
+                    .sorted(Comparator.comparingInt(WebhookResponseRule::getSortOrder))
+                    .collect(Collectors.toList());
+            for (WebhookResponseRule rule : sorted) {
+                if (!rule.isEnabled()) continue;
+                if (matchesAllConditions(rule.getConditions(), headers, queryParams, body, path)) {
+                    responseStatus = rule.getResponseStatus();
+                    responseBody = rule.getResponseBody();
+                    parseResponseHeaders(rule.getResponseHeaders(), responseHeaders);
+                    matchedRuleName = rule.getName();
+                    break;
+                }
+            }
+        }
+
+        // Apply default headers if no rule matched
+        if (matchedRuleName == null) {
+            parseResponseHeaders(webhook.getDefaultResponseHeaders(), responseHeaders);
+        }
         if (!responseHeaders.containsKey(HttpHeaders.CONTENT_TYPE)) {
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         }
-
-        String responseBody = webhook.getDefaultResponseBody();
-        int responseStatus = webhook.getDefaultResponseStatus();
 
         // Save log
         WebhookRequestLog logEntry = WebhookRequestLog.builder()
@@ -172,6 +198,7 @@ public class WebhookHandlerService {
                 .files(filesJson)
                 .responseStatus(responseStatus)
                 .responseBody(responseBody)
+                .matchedRuleName(matchedRuleName)
                 .build();
 
         logEntry = logRepository.save(logEntry);
@@ -213,6 +240,83 @@ public class WebhookHandlerService {
         } catch (Exception e) {
             log.warn("Failed to serialize webhook request log for SSE", e);
         }
+    }
+
+    // ── Rule Matching ─────────────────────────────────────────────────
+
+    private boolean matchesAllConditions(Set<WebhookRuleCondition> conditions,
+                                         Map<String, String> headers,
+                                         Map<String, String> queryParams,
+                                         String body,
+                                         String path) {
+        if (conditions == null || conditions.isEmpty()) return true;
+        for (WebhookRuleCondition condition : conditions) {
+            if (!matchesCondition(condition, headers, queryParams, body, path)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean matchesCondition(WebhookRuleCondition condition,
+                                     Map<String, String> headers,
+                                     Map<String, String> queryParams,
+                                     String body,
+                                     String path) {
+        return switch (condition.getConditionType()) {
+            case HEADER -> {
+                String headerVal = headers.get(condition.getMatchKey().toLowerCase());
+                if (headerVal == null) yield false;
+                yield condition.getMatchValue() == null || condition.getMatchValue().equals(headerVal);
+            }
+            case QUERY_PARAM -> {
+                String paramVal = queryParams.get(condition.getMatchKey());
+                if (paramVal == null) yield false;
+                yield condition.getMatchValue() == null || condition.getMatchValue().equals(paramVal);
+            }
+            case BODY_JSON_PATH -> {
+                if (body == null || body.isBlank()) yield false;
+                yield matchesJsonPath(body, condition.getMatchKey(), condition.getMatchValue());
+            }
+            case REQUEST_PATH -> {
+                if (path == null) yield false;
+                yield path.equals(condition.getMatchKey()) || path.startsWith(condition.getMatchKey() + "/");
+            }
+        };
+    }
+
+    private boolean matchesJsonPath(String body, String jsonPath, String expectedValue) {
+        try {
+            JsonNode root = objectMapper.readTree(body);
+            JsonNode node = navigateJsonPath(root, jsonPath);
+            if (node == null || node.isMissingNode()) return false;
+            if (expectedValue == null) return true;
+            return node.asText().equals(expectedValue);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private JsonNode navigateJsonPath(JsonNode root, String path) {
+        String normalized = path.startsWith("$.") ? path.substring(2) : path;
+        JsonNode current = root;
+        for (String segment : normalized.split("\\.")) {
+            if (current == null || current.isMissingNode()) return null;
+            if (segment.contains("[")) {
+                int bracketIdx = segment.indexOf('[');
+                String fieldName = segment.substring(0, bracketIdx);
+                int arrIdx = Integer.parseInt(segment.substring(bracketIdx + 1, segment.indexOf(']')));
+                current = current.get(fieldName);
+                if (current != null && current.isArray()) {
+                    current = current.get(arrIdx);
+                } else {
+                    return null;
+                }
+            } else {
+                current = current.get(segment);
+            }
+        }
+        return current;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────

@@ -64,6 +64,9 @@ public class WebhookRequestLog {
     @Column(name = "response_body", columnDefinition = "TEXT")
     private String responseBody;
 
+    @Column(name = "matched_rule_name", length = 200)
+    private String matchedRuleName;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

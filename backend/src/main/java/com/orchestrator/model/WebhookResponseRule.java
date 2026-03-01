@@ -1,65 +1,67 @@
 package com.orchestrator.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "orchestapi_webhooks", schema = "orchestrator")
-@SQLRestriction("deleted_at IS NULL")
+@Table(name = "orchestapi_webhook_response_rules", schema = "orchestrator")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Webhook {
+public class WebhookResponseRule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "webhook_id", nullable = false)
+    @JsonIgnore
+    private Webhook webhook;
+
     @Column(nullable = false, length = 200)
     private String name;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
 
     @Column(nullable = false)
     @Builder.Default
     private boolean enabled = true;
 
-    @Column(name = "default_response_status", nullable = false)
+    @Column(name = "response_status", nullable = false)
     @Builder.Default
-    private int defaultResponseStatus = 200;
+    private int responseStatus = 200;
 
-    @Column(name = "default_response_body", columnDefinition = "TEXT")
-    private String defaultResponseBody;
+    @Column(name = "response_body", columnDefinition = "TEXT")
+    private String responseBody;
 
-    @Column(name = "default_response_headers", columnDefinition = "jsonb")
+    @Column(name = "response_headers", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     @Builder.Default
-    private String defaultResponseHeaders = "[]";
+    private String responseHeaders = "[]";
 
-    @OneToMany(mappedBy = "webhook", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(name = "sort_order", nullable = false)
+    @Builder.Default
+    private int sortOrder = 0;
+
+    @OneToMany(mappedBy = "rule", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder")
     @Builder.Default
-    private List<WebhookResponseRule> responseRules = new ArrayList<>();
+    private Set<WebhookRuleCondition> conditions = new LinkedHashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
     @PrePersist
     protected void onCreate() {

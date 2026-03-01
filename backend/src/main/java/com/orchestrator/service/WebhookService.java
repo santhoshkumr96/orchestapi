@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orchestrator.dto.*;
 import com.orchestrator.exception.NotFoundException;
 import com.orchestrator.model.Webhook;
+import com.orchestrator.model.WebhookResponseRule;
+import com.orchestrator.model.WebhookRuleCondition;
 import com.orchestrator.repository.WebhookRepository;
 import com.orchestrator.repository.WebhookRequestLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -106,6 +108,52 @@ public class WebhookService {
         webhook.setEnabled(enabled);
         webhookRepository.save(webhook);
         long count = logRepository.countByWebhookId(id);
+        return WebhookResponse.fromWithCount(webhook, count);
+    }
+
+    // ── Response Rules ──────────────────────────────────────────────────
+
+    @Transactional
+    public WebhookResponse updateResponseRules(UUID webhookId, List<WebhookResponseRuleDto> ruleDtos) {
+        Webhook webhook = webhookRepository.findById(webhookId)
+                .orElseThrow(() -> new NotFoundException("Webhook not found: " + webhookId));
+
+        // Clear existing rules (orphan removal handles DB deletes)
+        webhook.getResponseRules().clear();
+        webhookRepository.saveAndFlush(webhook);
+
+        // Re-add rules from DTO
+        for (int i = 0; i < ruleDtos.size(); i++) {
+            WebhookResponseRuleDto dto = ruleDtos.get(i);
+            WebhookResponseRule rule = WebhookResponseRule.builder()
+                    .webhook(webhook)
+                    .name(dto.getName())
+                    .enabled(dto.isEnabled())
+                    .responseStatus(dto.getResponseStatus())
+                    .responseBody(dto.getResponseBody())
+                    .responseHeaders(serializeHeaders(dto.getResponseHeaders()))
+                    .sortOrder(i)
+                    .build();
+
+            if (dto.getConditions() != null) {
+                for (int j = 0; j < dto.getConditions().size(); j++) {
+                    WebhookRuleConditionDto cDto = dto.getConditions().get(j);
+                    WebhookRuleCondition condition = WebhookRuleCondition.builder()
+                            .rule(rule)
+                            .conditionType(cDto.getConditionType())
+                            .matchKey(cDto.getMatchKey())
+                            .matchValue(cDto.getMatchValue())
+                            .sortOrder(j)
+                            .build();
+                    rule.getConditions().add(condition);
+                }
+            }
+
+            webhook.getResponseRules().add(rule);
+        }
+
+        webhook = webhookRepository.save(webhook);
+        long count = logRepository.countByWebhookId(webhookId);
         return WebhookResponse.fromWithCount(webhook, count);
     }
 

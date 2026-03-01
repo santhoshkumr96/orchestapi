@@ -15,6 +15,8 @@ import {
   InputNumber,
   Tooltip,
   Badge,
+  Select,
+  Collapse,
 } from 'antd'
 import {
   ArrowLeftOutlined,
@@ -28,10 +30,12 @@ import {
   LinkOutlined,
   DownloadOutlined,
   EyeOutlined,
+  HolderOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons'
 import type { FilterDropdownProps } from 'antd/es/table/interface'
 import { useParams, useNavigate } from 'react-router-dom'
-import type { Webhook, WebhookRequestLog } from '../types/webhook'
+import type { Webhook, WebhookRequestLog, WebhookResponseRuleDto, WebhookRuleConditionDto, WebhookConditionType } from '../types/webhook'
 import type { WebhookRequest } from '../types/webhook'
 import { webhookApi } from '../services/webhookApi'
 
@@ -162,6 +166,377 @@ function KeyValueEditor({
       <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={addRow} style={{ marginTop: 4 }}>
         Add Header
       </Button>
+    </div>
+  )
+}
+
+// ────────────────── Condition Type Options ──────────────────
+
+const CONDITION_TYPE_OPTIONS: { value: WebhookConditionType; label: string }[] = [
+  { value: 'HEADER', label: 'Header' },
+  { value: 'QUERY_PARAM', label: 'Query Param' },
+  { value: 'BODY_JSON_PATH', label: 'Body JSON Path' },
+  { value: 'REQUEST_PATH', label: 'Request Path' },
+]
+
+// ────────────────── Response Rules Editor ──────────────────
+
+let _ruleId = 0
+function genRuleId() { return `rule_${++_ruleId}` }
+let _condId = 0
+function genCondId() { return `cond_${++_condId}` }
+
+interface RuleEditorRow {
+  _clientId: string
+  id?: string
+  name: string
+  enabled: boolean
+  responseStatus: number
+  responseBody: string
+  responseHeaders: KvRow[]
+  conditions: ConditionRow[]
+}
+
+interface ConditionRow {
+  _clientId: string
+  id?: string
+  conditionType: WebhookConditionType
+  matchKey: string
+  matchValue: string
+}
+
+function toRuleEditorRows(rules: WebhookResponseRuleDto[]): RuleEditorRow[] {
+  return (rules || []).map((r) => ({
+    _clientId: genRuleId(),
+    id: r.id,
+    name: r.name,
+    enabled: r.enabled,
+    responseStatus: r.responseStatus,
+    responseBody: r.responseBody || '',
+    responseHeaders: (r.responseHeaders || []).map((h) => ({ _clientId: genKvId(), key: h.key, value: h.value })),
+    conditions: (r.conditions || []).map((c) => ({
+      _clientId: genCondId(),
+      id: c.id,
+      conditionType: c.conditionType,
+      matchKey: c.matchKey,
+      matchValue: c.matchValue || '',
+    })),
+  }))
+}
+
+function fromRuleEditorRows(rows: RuleEditorRow[]): WebhookResponseRuleDto[] {
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    enabled: r.enabled,
+    responseStatus: r.responseStatus,
+    responseBody: r.responseBody || undefined,
+    responseHeaders: r.responseHeaders.filter((h) => h.key.trim()).map((h) => ({ key: h.key.trim(), value: h.value })),
+    conditions: r.conditions
+      .filter((c) => c.matchKey.trim())
+      .map((c) => ({
+        id: c.id,
+        conditionType: c.conditionType,
+        matchKey: c.matchKey.trim(),
+        matchValue: c.matchValue || undefined,
+      })),
+  }))
+}
+
+function ResponseRulesEditor({
+  webhookId,
+  initialRules,
+  onSaved,
+}: {
+  webhookId: string
+  initialRules: WebhookResponseRuleDto[]
+  onSaved: (webhook: Webhook) => void
+}) {
+  const [rules, setRules] = useState<RuleEditorRow[]>(() => toRuleEditorRows(initialRules))
+  const [saving, setSaving] = useState(false)
+  const [dirty, setDirty] = useState(false)
+
+  // Sync when initialRules changes (e.g. after reload)
+  useEffect(() => {
+    setRules(toRuleEditorRows(initialRules))
+    setDirty(false)
+  }, [initialRules])
+
+  const updateRule = (id: string, patch: Partial<RuleEditorRow>) => {
+    setRules((prev) => prev.map((r) => (r._clientId === id ? { ...r, ...patch } : r)))
+    setDirty(true)
+  }
+
+  const removeRule = (id: string) => {
+    setRules((prev) => prev.filter((r) => r._clientId !== id))
+    setDirty(true)
+  }
+
+  const addRule = () => {
+    setRules((prev) => [
+      ...prev,
+      {
+        _clientId: genRuleId(),
+        name: '',
+        enabled: true,
+        responseStatus: 200,
+        responseBody: '',
+        responseHeaders: [],
+        conditions: [],
+      },
+    ])
+    setDirty(true)
+  }
+
+  const addCondition = (ruleId: string) => {
+    setRules((prev) =>
+      prev.map((r) =>
+        r._clientId === ruleId
+          ? {
+              ...r,
+              conditions: [
+                ...r.conditions,
+                { _clientId: genCondId(), conditionType: 'HEADER' as WebhookConditionType, matchKey: '', matchValue: '' },
+              ],
+            }
+          : r,
+      ),
+    )
+    setDirty(true)
+  }
+
+  const updateCondition = (ruleId: string, condId: string, patch: Partial<ConditionRow>) => {
+    setRules((prev) =>
+      prev.map((r) =>
+        r._clientId === ruleId
+          ? { ...r, conditions: r.conditions.map((c) => (c._clientId === condId ? { ...c, ...patch } : c)) }
+          : r,
+      ),
+    )
+    setDirty(true)
+  }
+
+  const removeCondition = (ruleId: string, condId: string) => {
+    setRules((prev) =>
+      prev.map((r) =>
+        r._clientId === ruleId ? { ...r, conditions: r.conditions.filter((c) => c._clientId !== condId) } : r,
+      ),
+    )
+    setDirty(true)
+  }
+
+  const handleSave = async () => {
+    // Validate: all rules must have names
+    for (const rule of rules) {
+      if (!rule.name.trim()) {
+        message.error('All rules must have a name')
+        return
+      }
+    }
+    setSaving(true)
+    try {
+      const dtos = fromRuleEditorRows(rules)
+      const wh = await webhookApi.updateResponseRules(webhookId, dtos)
+      onSaved(wh)
+      setDirty(false)
+      message.success('Response rules saved')
+    } catch (err: any) {
+      if (err?.response?.data?.error) message.error(err.response.data.error)
+      else message.error('Failed to save rules')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const conditionSummary = (conditions: ConditionRow[]) => {
+    if (conditions.length === 0) return 'No conditions (always matches)'
+    return conditions
+      .filter((c) => c.matchKey.trim())
+      .map((c) => {
+        const typeLabel = CONDITION_TYPE_OPTIONS.find((o) => o.value === c.conditionType)?.label || c.conditionType
+        if (c.conditionType === 'REQUEST_PATH') return `Path: ${c.matchKey}`
+        return c.matchValue ? `${typeLabel}: ${c.matchKey} = ${c.matchValue}` : `${typeLabel}: ${c.matchKey} exists`
+      })
+      .join(' AND ')
+  }
+
+  return (
+    <div style={{
+      border: '1px solid #f0f0f0',
+      borderLeft: '3px solid #722ed1',
+      borderRadius: 4,
+      padding: '6px 12px',
+      marginBottom: 12,
+      background: '#fff',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: rules.length > 0 ? 8 : 0 }}>
+        <div style={{
+          width: 24, height: 24, background: '#722ed1', color: '#fff',
+          borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 11, fontWeight: 600,
+        }}>C</div>
+        <Text strong style={{ fontSize: 12 }}>Response Rules</Text>
+        <Tag style={{ fontSize: 11 }}>{rules.length} rule{rules.length !== 1 ? 's' : ''}</Tag>
+        <div style={{ flex: 1 }} />
+        {dirty && (
+          <Button size="small" type="primary" loading={saving} onClick={handleSave}>
+            Save Rules
+          </Button>
+        )}
+        <Button size="small" type="dashed" icon={<PlusOutlined />} onClick={addRule}>
+          Add Rule
+        </Button>
+      </div>
+
+      {rules.length === 0 && (
+        <Text type="secondary" style={{ fontSize: 12, display: 'block', padding: '4px 0' }}>
+          No response rules. All requests will use the default response above.
+        </Text>
+      )}
+
+      <Collapse
+        size="small"
+        items={rules.map((rule, idx) => ({
+          key: rule._clientId,
+          label: (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+              <HolderOutlined style={{ color: '#bfbfbf', cursor: 'grab' }} />
+              <Text strong style={{ fontSize: 12 }}>{rule.name || <Text type="secondary" italic>Untitled Rule</Text>}</Text>
+              <Tag color={rule.enabled ? 'green' : 'default'} style={{ fontSize: 10 }}>
+                {rule.enabled ? 'Enabled' : 'Disabled'}
+              </Tag>
+              <Tag style={{ fontSize: 10 }}>{rule.responseStatus}</Tag>
+              <Text type="secondary" style={{ fontSize: 11, flex: 1 }} ellipsis>
+                {conditionSummary(rule.conditions)}
+              </Text>
+            </div>
+          ),
+          extra: (
+            <Space size={4} onClick={(e) => e.stopPropagation()}>
+              <Switch
+                size="small"
+                checked={rule.enabled}
+                onChange={(v) => updateRule(rule._clientId, { enabled: v })}
+              />
+              <Popconfirm title="Delete this rule?" okType="danger" onConfirm={() => removeRule(rule._clientId)}>
+                <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </Space>
+          ),
+          children: (
+            <div>
+              {/* Rule Name */}
+              <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ textTransform: 'uppercase', color: '#8c8c8c', fontSize: 11, fontWeight: 500, letterSpacing: 0.3, marginBottom: 4 }}>
+                    RULE NAME
+                  </div>
+                  <Input
+                    size="small"
+                    placeholder="e.g. Error Response"
+                    value={rule.name}
+                    onChange={(e) => updateRule(rule._clientId, { name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <div style={{ textTransform: 'uppercase', color: '#8c8c8c', fontSize: 11, fontWeight: 500, letterSpacing: 0.3, marginBottom: 4 }}>
+                    STATUS CODE
+                  </div>
+                  <InputNumber
+                    size="small"
+                    min={100}
+                    max={599}
+                    value={rule.responseStatus}
+                    onChange={(v) => updateRule(rule._clientId, { responseStatus: v || 200 })}
+                    style={{ width: 100 }}
+                  />
+                </div>
+              </div>
+
+              {/* Response Body */}
+              <div style={{ textTransform: 'uppercase', color: '#8c8c8c', fontSize: 11, fontWeight: 500, letterSpacing: 0.3, marginBottom: 4 }}>
+                RESPONSE BODY
+              </div>
+              <Input.TextArea
+                size="small"
+                rows={2}
+                value={rule.responseBody}
+                onChange={(e) => updateRule(rule._clientId, { responseBody: e.target.value })}
+                placeholder='e.g. {"error":"bad request"}'
+                style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }}
+              />
+
+              {/* Response Headers */}
+              <div style={{ textTransform: 'uppercase', color: '#8c8c8c', fontSize: 11, fontWeight: 500, letterSpacing: 0.3, marginBottom: 4 }}>
+                RESPONSE HEADERS
+              </div>
+              <KeyValueEditor
+                value={rule.responseHeaders}
+                onChange={(headers) => updateRule(rule._clientId, { responseHeaders: headers })}
+              />
+
+              {/* Conditions */}
+              <div style={{
+                textTransform: 'uppercase', color: '#8c8c8c', fontSize: 11, fontWeight: 500,
+                letterSpacing: 0.3, marginTop: 12, marginBottom: 4,
+              }}>
+                CONDITIONS ({rule.conditions.length})
+              </div>
+              <Text type="secondary" style={{ fontSize: 11, display: 'block', marginBottom: 6 }}>
+                All conditions must match (AND logic). Leave value empty to check existence only.
+              </Text>
+
+              {rule.conditions.map((cond) => (
+                <div key={cond._clientId} style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
+                  <Select
+                    size="small"
+                    value={cond.conditionType}
+                    onChange={(v) => updateCondition(rule._clientId, cond._clientId, { conditionType: v })}
+                    options={CONDITION_TYPE_OPTIONS}
+                    style={{ width: 140 }}
+                  />
+                  <Input
+                    size="small"
+                    placeholder={
+                      cond.conditionType === 'BODY_JSON_PATH' ? '$.data.type'
+                        : cond.conditionType === 'REQUEST_PATH' ? '/api/v1/test'
+                          : 'key name'
+                    }
+                    value={cond.matchKey}
+                    onChange={(e) => updateCondition(rule._clientId, cond._clientId, { matchKey: e.target.value })}
+                    style={{ flex: 1 }}
+                  />
+                  <Input
+                    size="small"
+                    placeholder={cond.conditionType === 'REQUEST_PATH' ? '(not used)' : 'expected value (optional)'}
+                    disabled={cond.conditionType === 'REQUEST_PATH'}
+                    value={cond.matchValue}
+                    onChange={(e) => updateCondition(rule._clientId, cond._clientId, { matchValue: e.target.value })}
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    size="small"
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeCondition(rule._clientId, cond._clientId)}
+                  />
+                </div>
+              ))}
+
+              <Button
+                size="small"
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={() => addCondition(rule._clientId)}
+                style={{ marginTop: 4 }}
+              >
+                Add Condition
+              </Button>
+            </div>
+          ),
+        }))}
+      />
     </div>
   )
 }
@@ -723,6 +1098,15 @@ function WebhookDetailView({ webhookId }: { webhookId: string }) {
         )}
       </div>
 
+      {/* Response Rules */}
+      {webhook && (
+        <ResponseRulesEditor
+          webhookId={webhookId}
+          initialRules={webhook.responseRules || []}
+          onSaved={(wh) => setWebhook(wh)}
+        />
+      )}
+
       {/* Two-panel layout */}
       <div style={{ display: 'flex', gap: 12, minHeight: 400 }}>
         {/* Left: Request list (40%) */}
@@ -861,6 +1245,17 @@ function RequestDetail({ log }: { log: WebhookRequestLog }) {
           {log.multipart && <Tag color="blue" style={{ fontSize: 10 }}>Multipart</Tag>}
         </div>
       )}
+
+      {/* Matched Rule */}
+      <div style={{ marginTop: 6 }}>
+        {log.matchedRuleName ? (
+          <Tag color="purple" icon={<CheckCircleOutlined />} style={{ fontSize: 10 }}>
+            Matched: {log.matchedRuleName}
+          </Tag>
+        ) : (
+          <Tag style={{ fontSize: 10 }}>Default Response</Tag>
+        )}
+      </div>
 
       {/* REQUEST HEADERS */}
       <div style={sectionLabel}>REQUEST HEADERS</div>
