@@ -1,27 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="0%" stop-color="#0a2540"/>
       <stop offset="100%" stop-color="#0891b2"/>
     </linearGradient>
+    <marker id="arrow" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto">
+      <polygon points="0,0 6,2.5 0,5" fill="rgba(255,255,255,0.45)"/>
+    </marker>
   </defs>
   <!-- Background -->
-  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg)"/>
-  <!-- Flow lines -->
-  <line x1="256" y1="152" x2="168" y2="264" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
-  <line x1="256" y1="152" x2="344" y2="264" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
-  <line x1="168" y1="264" x2="256" y2="376" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
-  <line x1="344" y1="264" x2="256" y2="376" stroke="rgba(255,255,255,0.4)" stroke-width="5" stroke-linecap="round"/>
-  <!-- Top node (play arrow) -->
-  <circle cx="256" cy="148" r="32" fill="rgba(255,255,255,0.9)"/>
-  <path d="M244 136 L268 148 L244 160" stroke="#2563eb" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Left node (API) -->
-  <rect x="128" y="224" width="80" height="80" rx="20" fill="rgba(255,255,255,0.9)"/>
-  <text x="168" y="274" text-anchor="middle" fill="#2563eb" font-size="36" font-weight="700" font-family="monospace">{}</text>
-  <!-- Right node (API) -->
-  <rect x="304" y="224" width="80" height="80" rx="20" fill="rgba(255,255,255,0.9)"/>
-  <text x="344" y="274" text-anchor="middle" fill="#0891b2" font-size="36" font-weight="700" font-family="monospace">{}</text>
-  <!-- Bottom node (checkmark) -->
-  <circle cx="256" cy="380" r="32" fill="rgba(255,255,255,0.9)"/>
-  <path d="M240 380 L252 392 L272 372" stroke="#0891b2" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Connection lines with arrows -->
+  <line x1="232" y1="160" x2="178" y2="224" stroke="rgba(255,255,255,0.35)" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <line x1="280" y1="160" x2="334" y2="224" stroke="rgba(255,255,255,0.35)" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <line x1="176" y1="304" x2="230" y2="352" stroke="rgba(255,255,255,0.35)" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <line x1="336" y1="304" x2="282" y2="352" stroke="rgba(255,255,255,0.35)" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <!-- Decorative small hexagons -->
+  <path d="M104,112 L92,133 L68,133 L56,112 L68,91 L92,91 Z" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2.5"/>
+  <path d="M456,400 L444,421 L420,421 L408,400 L420,379 L444,379 Z" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2.5"/>
+  <!-- Accent dots -->
+  <circle cx="72" cy="192" r="5" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="440" cy="320" r="5" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="130" cy="140" r="3" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="390" cy="370" r="3" fill="rgba(255,255,255,0.08)"/>
+  <!-- Node A: Start (top) — flat-top hex -->
+  <path d="M304,120 L280,162 L232,162 L208,120 L232,78 L280,78 Z" fill="rgba(255,255,255,0.92)"/>
+  <path d="M248,104 L272,120 L248,136" stroke="#0a2540" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Node B: API (left) — outline hex with inner hex -->
+  <path d="M200,264 L176,306 L128,306 L104,264 L128,222 L176,222 Z" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.75)" stroke-width="4"/>
+  <path d="M168,264 L158,281 L138,281 L128,264 L138,247 L158,247 Z" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <!-- Node C: API (right) — filled hex with brackets -->
+  <path d="M408,264 L384,306 L336,306 L312,264 L336,222 L384,222 Z" fill="rgba(255,255,255,0.85)"/>
+  <path d="M348,252 L340,264 L348,276" stroke="#0891b2" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M372,252 L380,264 L372,276" stroke="#0891b2" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Node D: Validated (bottom) — filled hex with checkmark -->
+  <path d="M304,392 L280,434 L232,434 L208,392 L232,350 L280,350 Z" fill="rgba(255,255,255,0.92)"/>
+  <path d="M240,392 L252,408 L276,380" stroke="#0891b2" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

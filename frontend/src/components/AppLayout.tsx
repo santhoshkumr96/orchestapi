@@ -54,7 +54,7 @@ export default function AppLayout() {
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
             fontWeight: 700,
             fontSize: collapsed ? 12 : 14,
-            background: 'linear-gradient(135deg, #2563eb, #0891b2)',
+            background: 'linear-gradient(135deg, #0a2540, #0891b2)',
             color: '#fff',
             letterSpacing: collapsed ? 0 : 0.5,
           }}
