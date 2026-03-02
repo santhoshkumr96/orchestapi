@@ -27,6 +27,8 @@ public class KafkaConnector implements InfraConnector {
 
     private final ObjectMapper objectMapper;
 
+    // Read-only by design: uses KafkaConsumer (not KafkaProducer).
+    // Only consumes messages from topics — no write/produce capability.
     @Override
     public String execute(ConnectorType type, Map<String, Object> config, String query, int timeoutSeconds) {
         Properties props = new Properties();

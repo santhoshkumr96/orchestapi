@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Component
 @Slf4j
@@ -21,6 +22,14 @@ import java.util.*;
 public class ElasticsearchConnector implements InfraConnector {
 
     private final RestTemplate restTemplate;
+
+    private static final Set<String> ALLOWED_METHODS = Set.of("GET", "POST");
+
+    private static final Pattern READ_ONLY_POST_PATTERN = Pattern.compile(
+            "(/_(search|count|msearch|analyze|explain|field_caps|validate|cat|nodes|cluster|stats|mapping|settings|alias|segments))"
+                    + "|(^/_cat/)" + "|(^/_cluster/)" + "|(^/_nodes/)",
+            Pattern.CASE_INSENSITIVE
+    );
 
     @Override
     public String execute(ConnectorType type, Map<String, Object> config, String query, int timeoutSeconds) {
@@ -34,15 +43,17 @@ public class ElasticsearchConnector implements InfraConnector {
         String body = null;
 
         String trimmed = query.trim();
-        if (trimmed.matches("^(GET|POST|PUT|DELETE)\\s+.*")) {
+        if (trimmed.matches("^(GET|POST|PUT|DELETE|HEAD)\\s+.*")) {
             String[] parts = trimmed.split("\\s+", 3);
-            method = parts[0];
+            method = parts[0].toUpperCase();
             path = parts[1];
             body = parts.length > 2 ? parts[2] : null;
         } else {
             // Assume the whole query is the path
             path = trimmed;
         }
+
+        validateReadOnly(method, path);
 
         String fullUrl = baseUrl.replaceAll("/+$", "") + (path.startsWith("/") ? path : "/" + path);
 
@@ -87,6 +98,19 @@ public class ElasticsearchConnector implements InfraConnector {
         );
 
         return response.getBody() != null ? response.getBody() : "{}";
+    }
+
+    private void validateReadOnly(String method, String path) {
+        if (!ALLOWED_METHODS.contains(method)) {
+            throw new IllegalArgumentException(
+                    "Only read operations are allowed. Permitted methods: GET, POST (search endpoints only). " +
+                    "'" + method + "' is not permitted.");
+        }
+        if ("POST".equals(method) && !READ_ONLY_POST_PATTERN.matcher(path).find()) {
+            throw new IllegalArgumentException(
+                    "POST is only allowed for read-only endpoints (_search, _count, _msearch, _analyze, _explain, _field_caps, _validate, _cat, _cluster, _nodes). " +
+                    "Path '" + path + "' is not a recognized read-only endpoint.");
+        }
     }
 
     private String getString(Map<String, Object> config, String key) {

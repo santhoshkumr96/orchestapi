@@ -18,6 +18,8 @@ public class RabbitMqConnector implements InfraConnector {
 
     private final ObjectMapper objectMapper;
 
+    // Read-only by design: uses basicConsume (consumer) only — no publish/produce capability.
+    // Messages are acknowledged after reading, which is standard consumer behavior.
     @Override
     public String execute(ConnectorType type, Map<String, Object> config, String query, int timeoutSeconds) {
         boolean sslEnabled = SslContextHelper.isSslEnabled(config);

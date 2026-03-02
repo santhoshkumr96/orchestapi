@@ -72,10 +72,13 @@ public class MongoConnector implements InfraConnector {
             }
         }
 
+        // Read-only: only find (collection.{filter}) operations are allowed
+        validateReadOnly(query);
+
         // Parse query: "collection.{filterJson}" e.g. "orders.{\"orderId\":\"abc\"}"
         int dotIndex = query.indexOf('.');
         if (dotIndex < 0) {
-            throw new RuntimeException("Invalid MongoDB query format. Expected: collection.{filter}");
+            throw new IllegalArgumentException("Invalid MongoDB query format. Expected: collection.{filter}");
         }
         String collectionName = query.substring(0, dotIndex);
         String filterJson = query.substring(dotIndex + 1);
@@ -115,6 +118,21 @@ public class MongoConnector implements InfraConnector {
         }
 
         return MongoClients.create(connectionString);
+    }
+
+    private void validateReadOnly(String query) {
+        String trimmedLower = query.trim().toLowerCase();
+        // Block MongoDB shell-style write operations embedded in the query
+        String[] writeOps = {"insert", "update", "delete", "remove", "drop", "createindex", "dropindex",
+                "renamecollection", "findandmodify", "findoneandupdate", "findoneanddelete", "findoneandreplace",
+                "bulkwrite", "replaceone", "aggregate([", "$out", "$merge"};
+        for (String op : writeOps) {
+            if (trimmedLower.contains(op)) {
+                throw new IllegalArgumentException(
+                        "Only read operations are allowed. Detected write operation: '" + op + "'. " +
+                        "MongoDB queries must use the format: collection.{filter} for read-only find operations.");
+            }
+        }
     }
 
     private String getString(Map<String, Object> config, String key) {

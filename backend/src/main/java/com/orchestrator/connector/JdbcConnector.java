@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @Component
 @Slf4j
@@ -16,13 +17,21 @@ public class JdbcConnector implements InfraConnector {
 
     private final ObjectMapper objectMapper;
 
+    private static final Pattern READ_ONLY_PATTERN = Pattern.compile(
+            "^\\s*(SELECT|SHOW|DESCRIBE|DESC|EXPLAIN|WITH)\\b",
+            Pattern.CASE_INSENSITIVE
+    );
+
     @Override
     public String execute(ConnectorType type, Map<String, Object> config, String query, int timeoutSeconds) {
+        validateReadOnly(query);
+
         String jdbcUrl = buildJdbcUrl(type, config);
         String username = getString(config, "username");
         String password = getString(config, "password");
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, username, password)) {
+            conn.setReadOnly(true);
             conn.setNetworkTimeout(Runnable::run, timeoutSeconds * 1000);
             try (Statement stmt = conn.createStatement()) {
                 stmt.setQueryTimeout(timeoutSeconds);
@@ -77,6 +86,17 @@ public class JdbcConnector implements InfraConnector {
             case SQLSERVER -> baseUrl + ";encrypt=true;trustServerCertificate=" + trustAll;
             default -> baseUrl;
         };
+    }
+
+    private void validateReadOnly(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            throw new IllegalArgumentException("Query cannot be empty");
+        }
+        if (!READ_ONLY_PATTERN.matcher(query).find()) {
+            throw new IllegalArgumentException(
+                    "Only read operations are allowed. Permitted: SELECT, SHOW, DESCRIBE, EXPLAIN, WITH. " +
+                    "Write operations (INSERT, UPDATE, DELETE, DROP, CREATE, ALTER, TRUNCATE, etc.) are not permitted.");
+        }
     }
 
     private String getString(Map<String, Object> config, String key) {
