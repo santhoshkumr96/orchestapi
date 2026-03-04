@@ -873,13 +873,6 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
   const totalParams = queryParams.length
 
   // ====================
-  // Method color
-  // ====================
-  const METHOD_COLORS: Record<string, string> = {
-    GET: '#52c41a', POST: '#1677ff', PUT: '#fa8c16', DELETE: '#ff4d4f', PATCH: '#722ed1',
-  }
-
-  // ====================
   // Render
   // ====================
   return (
@@ -1329,7 +1322,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                               </div>
                               <div style={{ flex: 1, minWidth: 120 }}>
                                 <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Value</div>
-                                <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="application/json" envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                                <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="application/json" envVars={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
                               </div>
                             </div>
                           )}
@@ -1349,7 +1342,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                               </div>
                               <div>
                                 <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Body (JSON)</div>
-                                <PlaceholderInput mode="textarea" rows={4} size="small" value={rv.expectedBody ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedBody', v)} placeholder='{"key": "value"}' envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                                <PlaceholderInput mode="textarea" rows={4} size="small" value={rv.expectedBody ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedBody', v)} placeholder='{"key": "value"}' envVars={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
                               </div>
                             </div>
                           )}
@@ -1366,7 +1359,7 @@ export default function StepEditor({ step, suiteId, allSteps, envVarNames, envHe
                               </div>
                               <div style={{ flex: 1, minWidth: 120 }}>
                                 <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>Expected Value</div>
-                                <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="expected" envVarNames={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
+                                <PlaceholderInput size="small" value={rv.expectedValue ?? ''} onChange={(v) => updateResponseValidation(rvIdx, 'expectedValue', v)} placeholder="expected" envVars={envVarNames} depSteps={depStepInfos} fileKeys={fileKeys} />
                               </div>
                             </div>
                           )}

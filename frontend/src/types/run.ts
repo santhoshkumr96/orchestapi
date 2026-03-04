@@ -1,4 +1,4 @@
-import { SuiteExecutionResult } from './testSuite'
+import type { SuiteExecutionResult } from '../services/testSuiteApi'
 
 export interface TestRunResponse {
   id: string

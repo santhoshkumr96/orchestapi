@@ -11,6 +11,7 @@ import {
   Modal,
   Input,
 } from 'antd'
+import type { InputRef } from 'antd'
 import {
   PlusOutlined,
   EditOutlined,
@@ -41,6 +42,7 @@ function exportEnvironment(env: Environment) {
       valueType,
       headerValue,
     })),
+    connectors: [],
   }
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -65,7 +67,7 @@ function ColumnSearch({
   onReset: (dataIndex: string) => void
 }) {
   const [localValue, setLocalValue] = useState(appliedValue)
-  const inputRef = useRef<ReturnType<typeof Input>>(null)
+  const inputRef = useRef<InputRef>(null)
   const { close } = filterDropdownProps
 
   useEffect(() => {
@@ -240,6 +242,7 @@ export default function EnvironmentsPage() {
           baseUrl: parsed.baseUrl,
           variables: parsed.variables ?? [],
           headers: parsed.headers ?? [],
+          connectors: parsed.connectors ?? [],
         })
       } catch (err) {
         if (err instanceof SyntaxError) {

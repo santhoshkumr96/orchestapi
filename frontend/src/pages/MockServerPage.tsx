@@ -15,8 +15,8 @@ import {
   Input,
   Modal,
   Form,
-  Tooltip,
 } from 'antd'
+import type { InputRef } from 'antd'
 import {
   ArrowLeftOutlined,
   PlusOutlined,
@@ -28,7 +28,6 @@ import {
   CloseCircleOutlined,
   ApiOutlined,
   SearchOutlined,
-  CloseCircleFilled,
 } from '@ant-design/icons'
 import type { FilterDropdownProps } from 'antd/es/table/interface'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -67,7 +66,7 @@ function ColumnSearch({
   onReset: (dataIndex: string) => void
 }) {
   const [localValue, setLocalValue] = useState(appliedValue)
-  const inputRef = useRef<ReturnType<typeof Input>>(null)
+  const inputRef = useRef<InputRef>(null)
   const { close } = filterDropdownProps
 
   useEffect(() => {
@@ -357,7 +356,7 @@ function ServerDetailView({ serverId }: { serverId: string }) {
   const [logs, setLogs] = useState<MockRequestLog[]>([])
   const [logPage, setLogPage] = useState(0)
   const [logTotal, setLogTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
   const [logsLoading, setLogsLoading] = useState(false)
   const [toggling, setToggling] = useState(false)
   const [expandedEndpoint, setExpandedEndpoint] = useState<string | null>(null)

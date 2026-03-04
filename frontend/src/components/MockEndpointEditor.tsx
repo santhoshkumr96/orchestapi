@@ -7,8 +7,6 @@ import {
   InputNumber,
   Tabs,
   Table,
-  Space,
-  Popconfirm,
   message,
 } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'

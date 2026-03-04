@@ -46,8 +46,13 @@ public class TestSuiteController {
         return service.findAllPaged(name, PageRequest.of(page, size, sort));
     }
 
-    @GetMapping("/{id}")
-    public TestSuiteResponse findById(@PathVariable UUID id) {
+    @PostMapping("/import")
+    public ResponseEntity<TestSuiteResponse> importSuite(@Valid @RequestBody TestSuiteImportRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.importSuite(request));
+    }
+
+    @GetMapping("/{id:[0-9a-fA-F\\-]{36}}")
+    public TestSuiteResponse findById(@PathVariable("id") UUID id) {
         return service.findById(id);
     }
 
@@ -56,19 +61,14 @@ public class TestSuiteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
-    @PutMapping("/{id}")
-    public TestSuiteResponse update(@PathVariable UUID id, @Valid @RequestBody TestSuiteRequest request) {
+    @PutMapping("/{id:[0-9a-fA-F\\-]{36}}")
+    public TestSuiteResponse update(@PathVariable("id") UUID id, @Valid @RequestBody TestSuiteRequest request) {
         return service.update(id, request);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    @DeleteMapping("/{id:[0-9a-fA-F\\-]{36}}")
+    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/import")
-    public ResponseEntity<TestSuiteResponse> importSuite(@Valid @RequestBody TestSuiteImportRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.importSuite(request));
     }
 }

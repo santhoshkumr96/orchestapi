@@ -18,6 +18,7 @@ import {
   Form,
   Spin,
 } from 'antd'
+import type { InputRef } from 'antd'
 import {
   EyeOutlined,
   DownloadOutlined,
@@ -75,7 +76,7 @@ function ColumnSearch({
   onReset: (dataIndex: string) => void
 }) {
   const [localValue, setLocalValue] = useState(appliedValue)
-  const inputRef = useRef<ReturnType<typeof Input>>(null)
+  const inputRef = useRef<InputRef>(null)
   const { close } = filterDropdownProps
 
   useEffect(() => {

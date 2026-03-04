@@ -18,6 +18,7 @@ import {
   Select,
   Collapse,
 } from 'antd'
+import type { InputRef } from 'antd'
 import {
   ArrowLeftOutlined,
   PlusOutlined,
@@ -35,7 +36,7 @@ import {
 } from '@ant-design/icons'
 import type { FilterDropdownProps } from 'antd/es/table/interface'
 import { useParams, useNavigate } from 'react-router-dom'
-import type { Webhook, WebhookRequestLog, WebhookResponseRuleDto, WebhookRuleConditionDto, WebhookConditionType } from '../types/webhook'
+import type { Webhook, WebhookRequestLog, WebhookResponseRuleDto, WebhookConditionType } from '../types/webhook'
 import type { WebhookRequest } from '../types/webhook'
 import { webhookApi } from '../services/webhookApi'
 
@@ -71,7 +72,7 @@ function ColumnSearch({
   onReset: (dataIndex: string) => void
 }) {
   const [localValue, setLocalValue] = useState(appliedValue)
-  const inputRef = useRef<ReturnType<typeof Input>>(null)
+  const inputRef = useRef<InputRef>(null)
   const { close } = filterDropdownProps
 
   useEffect(() => {
@@ -396,7 +397,7 @@ function ResponseRulesEditor({
 
       <Collapse
         size="small"
-        items={rules.map((rule, idx) => ({
+        items={rules.map((rule) => ({
           key: rule._clientId,
           label: (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>

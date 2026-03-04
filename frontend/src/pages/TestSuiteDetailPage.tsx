@@ -381,23 +381,6 @@ export default function TestSuiteDetailPage() {
     }
   }
 
-  const handleCopyStepJson = (step: TestStep) => {
-    const exportData = {
-      name: step.name,
-      method: step.method,
-      url: step.url,
-      headers: step.headers,
-      queryParams: step.queryParams,
-      body: step.body,
-      cacheable: step.cacheable,
-      cacheTtlSeconds: step.cacheTtlSeconds,
-      responseHandlers: step.responseHandlers.map(({ id: _, ...rest }) => rest),
-      extractVariables: step.extractVariables.map(({ id: _, ...rest }) => rest),
-    }
-    navigator.clipboard.writeText(JSON.stringify(exportData, null, 2))
-    message.success('Step JSON copied to clipboard')
-  }
-
   // Group steps by groupName for visual grouping (#49)
   const groupedSteps = useMemo(() => {
     const filtered = stepSearch
