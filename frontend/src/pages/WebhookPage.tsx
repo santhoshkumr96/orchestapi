@@ -754,8 +754,7 @@ function WebhookListView() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <Title level={5} style={{ margin: 0 }}>Webhooks</Title>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <Button type="primary" icon={<PlusOutlined />} size="small" onClick={openCreate}>
           New Webhook
         </Button>
@@ -997,7 +996,7 @@ function WebhookDetailView({ webhookId }: { webhookId: string }) {
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/webhooks')} type="text" size="small" />
-        <Title level={5} style={{ margin: 0 }}>{webhook?.name || 'Webhook'}</Title>
+        <Title level={5} className="page-title">{webhook?.name || 'Webhook'}</Title>
         {webhook?.description && <Text type="secondary" style={{ fontSize: 12 }}>— {webhook.description}</Text>}
         <div style={{ flex: 1 }} />
         <Space size="middle">

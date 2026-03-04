@@ -1,7 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ConfigProvider, Result, Button } from 'antd'
 import AppLayout from './components/AppLayout'
-import DashboardPage from './pages/DashboardPage'
 import EnvironmentsPage from './pages/EnvironmentsPage'
 import EnvironmentDetailPage from './pages/EnvironmentDetailPage'
 import TestSuitesPage from './pages/TestSuitesPage'
@@ -16,7 +15,7 @@ function NotFoundPage() {
     <Result
       status="404"
       title="Page not found"
-      extra={<Button type="primary" href={base}>Go to Dashboard</Button>}
+      extra={<Button type="primary" href={base}>Go to Test Suites</Button>}
     />
   )
 }
@@ -27,16 +26,17 @@ function App() {
       componentSize="small"
       theme={{
         token: {
-          colorPrimary: '#1677ff',
-          borderRadius: 4,
+          colorPrimary: '#0891b2',
+          borderRadius: 6,
           fontSize: 13,
+          fontFamily: "'Outfit', sans-serif",
         },
       }}
     >
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || '/'}>
         <Routes>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<DashboardPage />} />
+            <Route path="/" element={<TestSuitesPage />} />
             <Route path="/environments" element={<EnvironmentsPage />} />
             <Route path="/environments/:id" element={<EnvironmentDetailPage />} />
             <Route path="/test-suites" element={<TestSuitesPage />} />

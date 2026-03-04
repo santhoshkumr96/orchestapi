@@ -536,7 +536,7 @@ export default function TestSuiteDetailPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <Space>
           <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/test-suites')} />
-          <Title level={5} style={{ margin: 0 }}>
+          <Title level={5} className="page-title">
             {isNew ? 'New Test Suite' : suiteName || 'Test Suite'}
           </Title>
           {!isNew && (
@@ -573,7 +573,7 @@ export default function TestSuiteDetailPage() {
       </div>
 
       {/* Suite metadata — collapsible, collapsed by default for existing suites */}
-      <Card size="small" style={{ marginBottom: 12, display: (isNew || metaOpen) ? undefined : 'none' }} styles={{ body: { padding: '16px 20px' } }}>
+      <Card size="small" className="brand-card card-suite" style={{ marginBottom: 12, display: (isNew || metaOpen) ? undefined : 'none' }} styles={{ body: { padding: '16px 20px' } }}>
           <Form form={form} layout="vertical" size="small">
             <Form.Item
               name="name"

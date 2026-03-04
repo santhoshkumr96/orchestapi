@@ -301,8 +301,7 @@ function ServerListView() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <Title level={5} style={{ margin: 0 }}>Mock Servers</Title>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <Button type="primary" icon={<PlusOutlined />} size="small" onClick={openCreate}>
           New Mock Server
         </Button>
@@ -505,7 +504,7 @@ function ServerDetailView({ serverId }: { serverId: string }) {
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/mock-server')} type="text" size="small" />
-        <Title level={5} style={{ margin: 0 }}>{server?.name || 'Mock Server'}</Title>
+        <Title level={5} className="page-title">{server?.name || 'Mock Server'}</Title>
         {server?.description && <Text type="secondary" style={{ fontSize: 12 }}>— {server.description}</Text>}
         <div style={{ flex: 1 }} />
         {status && (

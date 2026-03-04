@@ -674,7 +674,7 @@ export default function EnvironmentDetailPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
         <Space>
           <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/environments')} />
-          <Title level={5} style={{ margin: 0 }}>
+          <Title level={5} className="page-title">
             {isNew ? 'New Environment' : 'Edit Environment'}
           </Title>
         </Space>
@@ -691,7 +691,7 @@ export default function EnvironmentDetailPage() {
         </Tooltip>
       </div>
 
-      <Card size="small" style={{ marginBottom: 12 }}>
+      <Card size="small" className="brand-card card-env" style={{ marginBottom: 12 }}>
         <Form form={form} layout="vertical" size="small">
           <div style={{ display: 'flex', gap: 12 }}>
             <Form.Item

@@ -1,12 +1,199 @@
+/* ─── Theme Variables ─── */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --bg-hover: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --accent: #0891b2;
+  --accent-secondary: #3b82f6;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+  --font-heading: 'Syne', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-code: 'Fira Code', monospace;
+}
+/* ─── Base ─── */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Hide selected value text when typing in a searchable Select */
+/* ─── Skip to content (accessibility) ─── */
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-decoration: none;
+  border-radius: 0 0 6px 0;
+}
+.skip-to-content:focus {
+  left: 0;
+}
+
+/* ─── Focus rings (accessibility) ─── */
+*:focus-visible {
+  outline: 2px solid var(--accent-secondary);
+  outline-offset: 2px;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Headings ─── */
+h1, h2, h3, h4, h5, h6,
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3,
+.ant-typography h4,
+.ant-typography h5 {
+  font-family: var(--font-heading) !important;
+  letter-spacing: -0.3px;
+}
+
+/* ─── Code elements ─── */
+code, pre, .ant-input-affix-wrapper code, kbd {
+  font-family: var(--font-code) !important;
+}
+
+/* ─── Searchable Select fix ─── */
 .ant-select-show-search.ant-select-focused .ant-select-selection-item {
   opacity: 0;
 }
 .ant-select-show-search .ant-select-selection-search-input:not(:placeholder-shown) + .ant-select-selection-item {
   opacity: 0;
 }
+
+/* ─── Section labels ─── */
+.nav-section-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-muted);
+  padding: 16px 24px 4px;
+  display: block;
+}
+
+/* ─── Card styling ─── */
+.brand-card {
+  border-radius: 8px !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card) !important;
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+.brand-card:hover {
+  box-shadow: var(--shadow-hover) !important;
+}
+.brand-card .ant-card-head {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ─── Entity-specific left border ─── */
+.card-env { border-left: 3px solid #3b82f6 !important; }
+.card-suite { border-left: 3px solid #0891b2 !important; }
+.card-mock { border-left: 3px solid #8b5cf6 !important; }
+.card-webhook { border-left: 3px solid #f59e0b !important; }
+.card-run { border-left: 3px solid #22c55e !important; }
+.card-stat { border-left: 3px solid #64748b !important; }
+
+/* ─── Icon badges ─── */
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.icon-badge-env { background: #3b82f6; }
+.icon-badge-suite { background: #0891b2; }
+.icon-badge-mock { background: #8b5cf6; }
+.icon-badge-webhook { background: #f59e0b; }
+.icon-badge-run { background: #22c55e; }
+
+/* ─── Table header styling ─── */
+.ant-table-thead > tr > th,
+.ant-table-thead > tr > td {
+  font-family: var(--font-heading) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted) !important;
+}
+
+/* ─── Table row hover ─── */
+.ant-table-tbody > tr:hover > td {
+  background: var(--bg-hover) !important;
+}
+
+/* ─── HTTP method badges ─── */
+.method-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.method-get { background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2); }
+.method-post { background: rgba(59,130,246,0.1); color: #2563eb; border: 1px solid rgba(59,130,246,0.2); }
+.method-put { background: rgba(245,158,11,0.1); color: #d97706; border: 1px solid rgba(245,158,11,0.2); }
+.method-delete { background: rgba(239,68,68,0.1); color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
+.method-patch { background: rgba(139,92,246,0.1); color: #7c3aed; border: 1px solid rgba(139,92,246,0.2); }
+
+/* ─── Status badges ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ─── Page title ─── */
+.page-title {
+  font-family: var(--font-heading);
+  font-size: 16px !important;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin: 0 !important;
+}
+
+/* ─── Sidebar active item ─── */
+.ant-menu-item-selected {
+  border-right: none !important;
+}
+

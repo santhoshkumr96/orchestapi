@@ -7,7 +7,6 @@ import {
   Popconfirm,
   Tag,
   message,
-  Typography,
   Tooltip,
   Modal,
   Input,
@@ -26,7 +25,6 @@ import type { FilterDropdownProps } from 'antd/es/table/interface'
 import type { Environment, EnvironmentRequest, PageResponse } from '../types/environment'
 import { environmentApi, type EnvironmentListParams } from '../services/environmentApi'
 
-const { Title } = Typography
 
 const COLUMN_LABELS: Record<string, string> = {
   name: 'Name',
@@ -364,10 +362,7 @@ export default function EnvironmentsPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <Title level={5} style={{ margin: 0 }}>
-          Environments
-        </Title>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <Space>
           <Button
             icon={<ImportOutlined />}

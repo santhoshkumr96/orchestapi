@@ -39,7 +39,7 @@ import { testSuiteApi } from '../services/testSuiteApi'
 import { environmentApi } from '../services/environmentApi'
 import RunResultsPanel from '../components/RunResultsPanel'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 const { RangePicker } = DatePicker
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -636,10 +636,6 @@ export default function RunsPage() {
   // ──── Render ────
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <Title level={5} style={{ margin: 0 }}>Runs</Title>
-      </div>
-
       <Tabs
         defaultActiveKey="history"
         items={[

@@ -7,7 +7,6 @@ import {
   Popconfirm,
   Tag,
   message,
-  Typography,
   Tooltip,
   Modal,
   Input,
@@ -27,7 +26,6 @@ import type { TestSuite, TestSuiteListParams } from '../types/testSuite'
 import type { PageResponse } from '../types/environment'
 import { testSuiteApi, exportSuite } from '../services/testSuiteApi'
 
-const { Title } = Typography
 
 const COLUMN_LABELS: Record<string, string> = {
   name: 'Name',
@@ -332,10 +330,7 @@ export default function TestSuitesPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-        <Title level={5} style={{ margin: 0 }}>
-          Test Suites
-        </Title>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
         <Space>
           <Button
             icon={<ImportOutlined />}
